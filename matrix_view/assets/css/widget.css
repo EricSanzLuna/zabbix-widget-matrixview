@@ -36,6 +36,10 @@ form.dashboard-widget-matrix_view .matrix-view__help {
 	background: rgba(246, 248, 251, 0.9);
 }
 
+form.dashboard-widget-matrix_view .matrix-view__section-title {
+	font-weight: 700;
+}
+
 div.dashboard-widget-matrix_view .matrix-view__legend {
 	display: flex;
 	flex-wrap: wrap;

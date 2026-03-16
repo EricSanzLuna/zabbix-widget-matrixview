@@ -117,9 +117,8 @@ class WidgetView extends CControllerDashboardWidgetView {
 		}
 
 		$options = [
-			'output' => ['eventid', 'name', 'severity', 'acknowledged', 'clock', 'suppressed'],
+			'output' => ['eventid', 'objectid', 'name', 'severity', 'acknowledged', 'clock', 'suppressed'],
 			'hostids' => array_keys($hosts),
-			'selectHosts' => ['hostid', 'name'],
 			'selectTags' => ['tag', 'value'],
 			'preservekeys' => false,
 			'sortfield' => ['severity', 'clock'],
@@ -139,6 +138,7 @@ class WidgetView extends CControllerDashboardWidgetView {
 		}
 
 		$db_problems = API::Problem()->get($options);
+		$trigger_hosts = $this->getProblemTriggerHosts($db_problems);
 		$columns = [];
 		$rows = [];
 
@@ -153,14 +153,13 @@ class WidgetView extends CControllerDashboardWidgetView {
 
 		foreach ($db_problems as $problem) {
 			$column_value = $this->extractProblemColumn($problem, $fields['tag_key']);
+			$problem_hostids = $trigger_hosts[$problem['objectid']] ?? [];
 
-			if ($column_value === null || !isset($problem['hosts'])) {
+			if ($column_value === null || !$problem_hostids) {
 				continue;
 			}
 
-			foreach ($problem['hosts'] as $problem_host) {
-				$hostid = (string) $problem_host['hostid'];
-
+			foreach ($problem_hostids as $hostid) {
 				if (!array_key_exists($hostid, $rows)) {
 					continue;
 				}
@@ -205,6 +204,43 @@ class WidgetView extends CControllerDashboardWidgetView {
 		}
 
 		return $matrix;
+	}
+
+	private function getProblemTriggerHosts(array $problems): array {
+		$triggerids = [];
+
+		foreach ($problems as $problem) {
+			if (isset($problem['objectid']) && $problem['objectid'] !== '') {
+				$triggerids[] = $problem['objectid'];
+			}
+		}
+
+		if (!$triggerids) {
+			return [];
+		}
+
+		$db_triggers = API::Trigger()->get([
+			'output' => ['triggerid'],
+			'triggerids' => array_values(array_unique($triggerids)),
+			'selectHosts' => ['hostid'],
+			'preservekeys' => true
+		]);
+
+		if (!$db_triggers) {
+			return [];
+		}
+
+		$trigger_hosts = [];
+
+		foreach ($db_triggers as $db_trigger) {
+			$trigger_hosts[$db_trigger['triggerid']] = [];
+
+			foreach ($db_trigger['hosts'] ?? [] as $db_host) {
+				$trigger_hosts[$db_trigger['triggerid']][] = (string) $db_host['hostid'];
+			}
+		}
+
+		return $trigger_hosts;
 	}
 
 	private function buildLatestDataMatrix(array $hosts, array $fields): array {

@@ -33,6 +33,13 @@ $missing_label = new CWidgetFieldTextBoxView($data['fields']['missing_label']);
 	->addField(new CWidgetFieldIntegerBoxView($data['fields']['limit_hosts']))
 	->addField(new CWidgetFieldIntegerBoxView($data['fields']['limit_columns']))
 	->addField($visual_mode)
+	->addItem([
+		(new CLabel(_('Problems mode')))->addClass('js-mode-problems matrix-view__section-title'),
+		(new CFormField(
+			(new CDiv(_('Use active problem tags to build the matrix columns, similar to an operational status board.')))
+				->addClass('matrix-view__help')
+		))->addClass('js-mode-problems')
+	])
 	->addField($tag_key, 'js-mode-problems')
 	->addField($problem_severities, 'js-mode-problems')
 	->addField($ack_filter, 'js-mode-problems')
@@ -40,6 +47,13 @@ $missing_label = new CWidgetFieldTextBoxView($data['fields']['missing_label']);
 	->addField($maintenance_filter, 'js-mode-problems')
 	->addField($column_order, 'js-mode-problems')
 	->addField($show_problem_count, 'js-mode-problems')
+	->addItem([
+		(new CLabel(_('Latest data mode')))->addClass('js-mode-latest-data matrix-view__section-title'),
+		(new CFormField(
+			(new CDiv(_('Define one column per line using Label|pattern|direction|warn|high|critical. Example: IIS|service.info[W3SVC,state]|desc|6|3|1')))
+				->addClass('matrix-view__help')
+		))->addClass('js-mode-latest-data')
+	])
 	->addField($latest_columns, 'js-mode-latest-data')
 	->addField($latest_direction, 'js-mode-latest-data')
 	->addField($missing_label, 'js-mode-latest-data')
