@@ -1,0 +1,25 @@
+{
+  "manifest_version": 2.0,
+  "id": "matrix_view",
+  "type": "widget",
+  "name": "Matrix View",
+  "namespace": "MatrixView",
+  "version": "1.0.0",
+  "author": "OpenAI Codex",
+  "actions": {
+    "widget.matrix_view.view": {
+      "class": "WidgetView"
+    }
+  },
+  "widget": {
+    "js_class": "WidgetMatrixView"
+  },
+  "assets": {
+    "css": [
+      "widget.css"
+    ],
+    "js": [
+      "class.widget.js"
+    ]
+  }
+}
