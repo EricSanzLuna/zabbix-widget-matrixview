@@ -15,6 +15,24 @@ $wrapper->addClass($fields['visual_mode'] == \Modules\MatrixView\Widget::VISUAL_
 	: 'matrix-view--compact'
 );
 
+$shorten_label = static function(string $label): string {
+	if (preg_match('/"([^"]+)"/', $label, $matches) === 1) {
+		return $matches[1];
+	}
+
+	$label = preg_replace('/^State of service\s*/i', '', $label) ?? $label;
+	$label = preg_replace('/^Ping to\s*/i', '', $label) ?? $label;
+	$label = preg_replace('/^Acceso\s*/i', '', $label) ?? $label;
+	$label = preg_replace('/\s*\([^)]*\)\s*/', '', $label) ?? $label;
+	$label = trim($label);
+
+	if (mb_strlen($label) > 22) {
+		return mb_substr($label, 0, 22).'...';
+	}
+
+	return $label;
+};
+
 foreach ($matrix['warnings'] as $warning) {
 	$wrapper->addItem((new CDiv($warning))->addClass('matrix-view__warning'));
 }
@@ -46,9 +64,13 @@ else {
 	);
 
 	foreach ($matrix['columns'] as $column) {
+		$short_label = $shorten_label($column['label']);
+
 		$header_row->addItem(
 			(new CTag('th', true,
-				(new CSpan($column['label']))->addClass('matrix-view__column-label')
+				(new CSpan($short_label))
+					->addClass('matrix-view__column-label')
+					->setAttribute('title', $column['label'])
 			))->addClass('matrix-view__sticky-head matrix-view__column-head')
 		);
 	}
@@ -67,13 +89,18 @@ else {
 
 		foreach ($matrix['columns'] as $column) {
 			$cell = $row['cells'][$column['id']];
+			$show_value = !in_array($cell['state'], ['ok', 'missing'], true);
+			$cell_body = [
+				(new CSpan($cell['icon']))->addClass('matrix-view__icon '.$cell['icon_class'])
+			];
+
+			if ($show_value) {
+				$cell_body[] = (new CSpan($cell['label']))->addClass('matrix-view__value');
+			}
 
 			$table_row->addItem(
 				(new CTag('td', true,
-					(new CTag('div', true, [
-						(new CSpan($cell['icon']))->addClass('matrix-view__icon '.$cell['icon_class']),
-						(new CSpan($cell['label']))->addClass('matrix-view__value')
-					]))
+					(new CTag('div', true, $cell_body))
 						->addClass('matrix-view__cell-action')
 						->setAttribute('title', $cell['tooltip'])
 				))
