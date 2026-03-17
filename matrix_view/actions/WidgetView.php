@@ -122,7 +122,7 @@ class WidgetView extends CControllerDashboardWidgetView {
 		foreach ($db_items as $db_item) {
 			$column_id = (string) $db_item['itemid'];
 			$full_label = $db_item['name'];
-			$display_label = $column_aliases[$db_item['key_']] ?? $full_label;
+			$display_label = $column_aliases[$this->normalizeItemKey($db_item['key_'])] ?? $full_label;
 
 			$columns[] = [
 				'id' => $column_id,
@@ -185,7 +185,7 @@ class WidgetView extends CControllerDashboardWidgetView {
 					$item,
 					$itemid !== null ? ($active_triggers_by_itemid[$itemid] ?? null) : null,
 					$fields,
-					$column['thresholds'] ?? ($item_thresholds[$column['key_']] ?? null)
+					$column['thresholds'] ?? $this->findConfigByItemKey($item_thresholds, $column['key_'])
 				);
 			}
 
@@ -480,7 +480,7 @@ class WidgetView extends CControllerDashboardWidgetView {
 				continue;
 			}
 
-			$result[$parts[0]] = [
+			$result[$this->normalizeItemKey($parts[0])] = [
 				'direction' => $this->parseDirection($parts[1]),
 				'warning' => $this->parseNullableNumber($parts[2]),
 				'high' => $this->parseNullableNumber($parts[3]),
@@ -512,10 +512,24 @@ class WidgetView extends CControllerDashboardWidgetView {
 				continue;
 			}
 
-			$result[$parts[0]] = $parts[1];
+			$result[$this->normalizeItemKey($parts[0])] = $parts[1];
 		}
 
 		return $result;
+	}
+
+	private function findConfigByItemKey(array $config, string $item_key): ?array {
+		$normalized_key = $this->normalizeItemKey($item_key);
+
+		return $config[$normalized_key] ?? null;
+	}
+
+	private function normalizeItemKey(string $item_key): string {
+		$item_key = trim($item_key);
+		$item_key = preg_replace('/\s+/', '', $item_key) ?? $item_key;
+		$item_key = str_replace(['"', "'"], '', $item_key);
+
+		return mb_strtolower($item_key);
 	}
 
 	private function parseDirection(string $direction): int {

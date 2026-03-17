@@ -6,7 +6,6 @@ use Modules\MatrixView\Widget;
 use Zabbix\Widgets\CWidgetField;
 use Zabbix\Widgets\CWidgetForm;
 use Zabbix\Widgets\Fields\CWidgetFieldCheckBox;
-use Zabbix\Widgets\Fields\CWidgetFieldColor;
 use Zabbix\Widgets\Fields\CWidgetFieldIntegerBox;
 use Zabbix\Widgets\Fields\CWidgetFieldMultiSelectGroup;
 use Zabbix\Widgets\Fields\CWidgetFieldMultiSelectHost;
@@ -85,12 +84,12 @@ class WidgetForm extends CWidgetForm {
 				(new CWidgetFieldNumericBox('critical_threshold', _('Critical threshold')))
 					->setDefault('95')
 			)
-			->addField((new CWidgetFieldColor('color_ok', _('OK color')))->setDefault('4bb476'))
-			->addField((new CWidgetFieldColor('color_info', _('Info color')))->setDefault('5d86bb'))
-			->addField((new CWidgetFieldColor('color_warning', _('Warning color')))->setDefault('d9a24a'))
-			->addField((new CWidgetFieldColor('color_high', _('High color')))->setDefault('ea8d3a'))
-			->addField((new CWidgetFieldColor('color_critical', _('Critical color')))->setDefault('d35353'))
-			->addField((new CWidgetFieldColor('color_missing', _('Missing item color')))->setDefault('7f8792'))
+			->addField((new CWidgetFieldTextBox('color_ok', _('OK color')))->setDefault('4bb476'))
+			->addField((new CWidgetFieldTextBox('color_info', _('Info color')))->setDefault('5d86bb'))
+			->addField((new CWidgetFieldTextBox('color_warning', _('Warning color')))->setDefault('d9a24a'))
+			->addField((new CWidgetFieldTextBox('color_high', _('High color')))->setDefault('ea8d3a'))
+			->addField((new CWidgetFieldTextBox('color_critical', _('Critical color')))->setDefault('d35353'))
+			->addField((new CWidgetFieldTextBox('color_missing', _('Missing item color')))->setDefault('7f8792'))
 			->addField(
 				new CWidgetFieldTextArea('column_aliases', _('Column aliases'))
 			)

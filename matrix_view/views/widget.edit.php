@@ -16,12 +16,12 @@ $threshold_direction = new CWidgetFieldSelectView($data['fields']['threshold_dir
 $warning_threshold = new CWidgetFieldNumericBoxView($data['fields']['warning_threshold']);
 $high_threshold = new CWidgetFieldNumericBoxView($data['fields']['high_threshold']);
 $critical_threshold = new CWidgetFieldNumericBoxView($data['fields']['critical_threshold']);
-$color_ok = new CWidgetFieldColorView($data['fields']['color_ok']);
-$color_info = new CWidgetFieldColorView($data['fields']['color_info']);
-$color_warning = new CWidgetFieldColorView($data['fields']['color_warning']);
-$color_high = new CWidgetFieldColorView($data['fields']['color_high']);
-$color_critical = new CWidgetFieldColorView($data['fields']['color_critical']);
-$color_missing = new CWidgetFieldColorView($data['fields']['color_missing']);
+$color_ok = new CWidgetFieldTextBoxView($data['fields']['color_ok']);
+$color_info = new CWidgetFieldTextBoxView($data['fields']['color_info']);
+$color_warning = new CWidgetFieldTextBoxView($data['fields']['color_warning']);
+$color_high = new CWidgetFieldTextBoxView($data['fields']['color_high']);
+$color_critical = new CWidgetFieldTextBoxView($data['fields']['color_critical']);
+$color_missing = new CWidgetFieldTextBoxView($data['fields']['color_missing']);
 $column_aliases = new CWidgetFieldTextAreaView($data['fields']['column_aliases']);
 $item_thresholds = new CWidgetFieldTextAreaView($data['fields']['item_thresholds']);
 $ok_text = new CWidgetFieldTextBoxView($data['fields']['ok_text']);
@@ -82,7 +82,7 @@ $missing_label = new CWidgetFieldTextBoxView($data['fields']['missing_label']);
 	->addItem([
 		new CLabel(_('Indicator colors')),
 		new CFormField(
-			(new CDiv(_('Customize the color used by each state indicator and its soft background tint.')))
+			(new CDiv(_('Use HEX values like 4bb476 or #4bb476. These colors drive each state indicator and its soft background tint.')))
 				->addClass('matrix-view__help')
 		)
 	])
