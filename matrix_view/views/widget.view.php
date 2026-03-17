@@ -31,6 +31,14 @@ $normalize_hex = static function(?string $color, string $default): string {
 		return strtolower($color);
 	}
 
+	if (preg_match('/^[0-9a-fA-F]{6}$/', $color) === 1) {
+		return '#'.strtolower($color);
+	}
+
+	if (preg_match('/^[0-9a-fA-F]{3}$/', $color) === 1) {
+		return '#'.strtolower($color);
+	}
+
 	return $default;
 };
 
