@@ -17,7 +17,7 @@ div.dashboard-widget-matrix_view .matrix-view {
 	flex-direction: column;
 	gap: 8px;
 	height: 100%;
-	background: var(--matrix-bg);
+	background: transparent;
 	color: var(--matrix-text);
 }
 
@@ -75,8 +75,8 @@ div.dashboard-widget-matrix_view .matrix-view__table-wrap {
 	overflow: auto;
 	padding: 4px;
 	border-radius: 12px;
-	background: linear-gradient(180deg, rgba(21, 24, 30, 0.98), rgba(25, 29, 36, 0.98));
-	box-shadow: inset 0 0 0 1px var(--matrix-border);
+	background: transparent;
+	box-shadow: none;
 }
 
 div.dashboard-widget-matrix_view .matrix-view__table {
@@ -95,9 +95,8 @@ div.dashboard-widget-matrix_view .matrix-view__table td {
 div.dashboard-widget-matrix_view .matrix-view__table th {
 	background: transparent;
 	color: var(--matrix-muted);
-	font-size: 10px;
+	font-size: clamp(0.7rem, 0.65rem + 0.3vw, 0.95rem);
 	line-height: 1.2;
-	text-transform: uppercase;
 	padding: 2px 0 0;
 }
 
@@ -115,7 +114,7 @@ div.dashboard-widget-matrix_view .matrix-view__column-label {
 	max-width: 94px;
 	transform: translate(10px, 13px) rotate(-43deg);
 	transform-origin: left bottom;
-	font-size: 9px;
+	font-size: clamp(0.68rem, 0.65rem + 0.2vw, 0.9rem);
 	line-height: 1.02;
 	white-space: normal;
 }
@@ -126,14 +125,18 @@ div.dashboard-widget-matrix_view .matrix-view__sticky-col {
 	z-index: 3;
 	background: rgba(16, 19, 24, 0.96);
 	padding: 8px 10px;
-	font-size: 12px;
+	font-size: clamp(0.75rem, 0.7rem + 0.2vw, 1rem);
 	font-weight: 600;
 	box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.035);
 	border-radius: 8px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 
 div.dashboard-widget-matrix_view .matrix-view__host-head {
 	color: rgba(255, 255, 255, 0.72);
+	vertical-align: middle;
 }
 
 div.dashboard-widget-matrix_view .matrix-view__cell {
@@ -147,10 +150,10 @@ div.dashboard-widget-matrix_view .matrix-view__cell-action {
 	justify-content: center;
 	gap: 2px;
 	min-height: 34px;
-	padding: 4px;
+	padding: 3px 4px;
 	border-radius: 8px;
-	background: rgba(255, 255, 255, 0.02);
-	box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+	background: rgba(255, 255, 255, 0.015);
+	box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
 	font-size: 10px;
 }
 
@@ -178,6 +181,7 @@ div.dashboard-widget-matrix_view .matrix-view__value {
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
+	line-height: 1;
 }
 
 div.dashboard-widget-matrix_view .matrix-view__cell--ok,

@@ -147,6 +147,13 @@ class WidgetView extends CControllerDashboardWidgetView {
 		$items_by_key = $this->loadItemsForHosts($hosts, $columns);
 		$active_triggers_by_itemid = $this->loadActiveTriggersForItems($items_by_key);
 		$item_thresholds = $this->parseItemThresholds($fields['item_thresholds']);
+		$hosts = $this->filterHostsWithVisibleItems($hosts, $columns, $items_by_key);
+
+		if (!$hosts) {
+			$matrix['empty_state'] = _('No hosts have any of the selected items.');
+
+			return $matrix;
+		}
 
 		foreach ($hosts as $hostid => $host) {
 			$row = [
@@ -176,7 +183,36 @@ class WidgetView extends CControllerDashboardWidgetView {
 			$matrix['empty_state'] = _('No matching items were found for the selected item keys on the filtered hosts.');
 		}
 
+		$matrix['rows'] = array_filter($matrix['rows'], static function(array $row): bool {
+			foreach ($row['cells'] as $cell) {
+				if ($cell['state'] !== 'missing') {
+					return true;
+				}
+			}
+
+			return false;
+		});
+
+		if (!$matrix['rows']) {
+			$matrix['empty_state'] = _('No hosts have the configured items.');
+		}
+
 		return $matrix;
+	}
+
+	private function filterHostsWithVisibleItems(array $hosts, array $columns, array $items_by_key): array {
+		$filtered_hosts = [];
+
+		foreach ($hosts as $hostid => $host) {
+			foreach ($columns as $column) {
+				if (isset($items_by_key[$column['key_']][$hostid])) {
+					$filtered_hosts[$hostid] = $host;
+					break;
+				}
+			}
+		}
+
+		return $filtered_hosts;
 	}
 
 	private function loadActiveTriggersForItems(array $items_by_key): array {

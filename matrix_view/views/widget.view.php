@@ -49,13 +49,13 @@ foreach ($matrix['legend'] as $legend_item) {
 	);
 }
 
-	$wrapper->addItem($legend);
+$wrapper->addItem($legend);
 
-	if (!$matrix['columns'] || !$matrix['rows']) {
-		$wrapper->addItem((new CDiv($matrix['empty_state']))->addClass('matrix-view__empty'));
-	}
-	else {
-		$table_wrap = (new CDiv())->addClass('matrix-view__table-wrap')->addClass('matrix-view__table-wrap--soft');
+if (!$matrix['columns'] || !$matrix['rows']) {
+	$wrapper->addItem((new CDiv($matrix['empty_state']))->addClass('matrix-view__empty'));
+}
+else {
+	$table_wrap = (new CDiv())->addClass('matrix-view__table-wrap');
 	$table = (new CTag('table', true))->addClass('matrix-view__table');
 	$thead = new CTag('thead', true);
 	$header_row = new CTag('tr', true);
