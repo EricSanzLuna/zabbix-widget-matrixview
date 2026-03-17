@@ -12,6 +12,7 @@ use Zabbix\Widgets\Fields\CWidgetFieldMultiSelectHost;
 use Zabbix\Widgets\Fields\CWidgetFieldMultiSelectItem;
 use Zabbix\Widgets\Fields\CWidgetFieldNumericBox;
 use Zabbix\Widgets\Fields\CWidgetFieldSelect;
+use Zabbix\Widgets\Fields\CWidgetFieldTextArea;
 use Zabbix\Widgets\Fields\CWidgetFieldTextBox;
 
 class WidgetForm extends CWidgetForm {
@@ -48,6 +49,15 @@ class WidgetForm extends CWidgetForm {
 			->addField(
 				(new CWidgetFieldMultiSelectItem('itemids', _('Columns')))
 					->setFlags(CWidgetField::FLAG_NOT_EMPTY | CWidgetField::FLAG_LABEL_ASTERISK)
+			)
+			->addField(
+				(new CWidgetFieldSelect('state_source', _('State source'), [
+					Widget::STATE_SOURCE_TRIGGER_FIRST => _('Triggers first, thresholds fallback'),
+					Widget::STATE_SOURCE_THRESHOLDS_ONLY => _('Thresholds and text patterns only')
+				]))->setDefault(Widget::STATE_SOURCE_TRIGGER_FIRST)
+			)
+			->addField(
+				new CWidgetFieldTextArea('item_thresholds', _('Per-item thresholds'))
 			)
 			->addField(
 				(new CWidgetFieldSelect('threshold_direction', _('Numeric thresholds'), [

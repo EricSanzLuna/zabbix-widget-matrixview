@@ -24,7 +24,8 @@ $legend = (new CTag('ul', true))->addClass('matrix-view__legend');
 foreach ($matrix['legend'] as $legend_item) {
 	$legend->addItem(
 		(new CTag('li', true, [
-			(new CSpan())->addClass('matrix-view__legend-swatch matrix-view__cell--'.$legend_item['state']),
+			(new CSpan($legend_item['state'] === 'ok' ? 'v' : ($legend_item['state'] === 'info' ? 'i' : ($legend_item['state'] === 'missing' ? '-' : ($legend_item['state'] === 'disaster' ? 'x' : '!')))))
+				->addClass('matrix-view__legend-swatch matrix-view__cell--'.$legend_item['state']),
 			(new CSpan($legend_item['label']))->addClass('matrix-view__legend-label')
 		]))->addClass('matrix-view__legend-item')
 	);
@@ -41,12 +42,14 @@ else {
 	$thead = new CTag('thead', true);
 	$header_row = new CTag('tr', true);
 	$header_row->addItem(
-		(new CTag('th', true, _('Host')))->addClass('matrix-view__sticky-col matrix-view__sticky-head')
+		(new CTag('th', true, _('Host')))->addClass('matrix-view__sticky-col matrix-view__sticky-head matrix-view__host-head')
 	);
 
 	foreach ($matrix['columns'] as $column) {
 		$header_row->addItem(
-			(new CTag('th', true, $column['label']))->addClass('matrix-view__sticky-head')
+			(new CTag('th', true,
+				(new CSpan($column['label']))->addClass('matrix-view__column-label')
+			))->addClass('matrix-view__sticky-head matrix-view__column-head')
 		);
 	}
 
@@ -67,7 +70,10 @@ else {
 
 			$table_row->addItem(
 				(new CTag('td', true,
-					(new CSpan($cell['label']))
+					(new CTag('div', true, [
+						(new CSpan($cell['icon']))->addClass('matrix-view__icon '.$cell['icon_class']),
+						(new CSpan($cell['label']))->addClass('matrix-view__value')
+					]))
 						->addClass('matrix-view__cell-action')
 						->setAttribute('title', $cell['tooltip'])
 				))

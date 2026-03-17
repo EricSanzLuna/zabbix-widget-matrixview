@@ -15,6 +15,9 @@ class Widget extends CWidget {
 	public const THRESHOLD_ASCENDING = 0;
 	public const THRESHOLD_DESCENDING = 1;
 
+	public const STATE_SOURCE_TRIGGER_FIRST = 0;
+	public const STATE_SOURCE_THRESHOLDS_ONLY = 1;
+
 	public function getTranslationStrings(): array {
 		return [];
 	}

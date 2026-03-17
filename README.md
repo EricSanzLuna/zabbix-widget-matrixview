@@ -57,13 +57,47 @@ Example:
 - select `CPU utilization` from one host
 - if other hosts also have the same `key_`, they will fill that column
 
+### Per-item thresholds
+
+You can override thresholds for specific selected items in `Per-item thresholds`.
+
+Format:
+
+```text
+key|direction|warning|high|critical
+```
+
+Examples:
+
+```text
+system.cpu.util|asc|70|85|95
+vfs.fs.size[/,pused]|asc|80|90|95
+service.info[W3SVC,state]|desc|6|3|1
+```
+
+Notes:
+
+- `key` must match the selected reference item's exact `key_`
+- `direction` accepts `asc` or `desc`
+- if a selected item has no override, global thresholds are used
+
 ## Colors and state evaluation
 
-The widget supports both numeric and text item values.
+The widget supports both numeric and text item values, and can also use active triggers associated with the item.
+
+### Trigger-first mode
+
+When `State source` is set to `Triggers first, thresholds fallback`:
+
+1. the widget checks for active triggers linked to the item
+2. if one or more active triggers exist, the highest trigger severity drives the cell color
+3. if no active trigger exists, the widget falls back to numeric thresholds or text patterns
+
+This is the recommended mode when your trigger severities already represent the operational importance of each item.
 
 ### Numeric values
 
-Numeric values use global thresholds:
+Numeric values use per-item thresholds when defined, otherwise global thresholds:
 
 - `Warning threshold`
 - `High threshold`
@@ -170,7 +204,6 @@ Adjust:
 ## Current limitations
 
 - no tag-based `Problems` mode
-- no per-column custom thresholds yet
 - no detail modal yet
 
 The current version intentionally focuses on a more reliable item-based matrix with a simpler configuration model.

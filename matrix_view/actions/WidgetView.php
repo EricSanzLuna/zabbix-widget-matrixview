@@ -35,6 +35,8 @@ class WidgetView extends CControllerDashboardWidgetView {
 			'limit_hosts' => 25,
 			'visual_mode' => Widget::VISUAL_COMPACT,
 			'itemids' => [],
+			'state_source' => Widget::STATE_SOURCE_TRIGGER_FIRST,
+			'item_thresholds' => '',
 			'threshold_direction' => Widget::THRESHOLD_ASCENDING,
 			'warning_threshold' => '70',
 			'high_threshold' => '85',
@@ -129,12 +131,7 @@ class WidgetView extends CControllerDashboardWidgetView {
 			'legend' => $this->getLegend(),
 			'warnings' => [],
 			'empty_state' => _('Select one or more items to build the matrix.'),
-			'thresholds' => [
-				'direction' => (int) $fields['threshold_direction'],
-				'warning' => $this->parseNullableNumber($fields['warning_threshold']),
-				'high' => $this->parseNullableNumber($fields['high_threshold']),
-				'critical' => $this->parseNullableNumber($fields['critical_threshold'])
-			]
+			'thresholds' => $this->getGlobalThresholds($fields)
 		];
 
 		if (!$columns) {
@@ -148,6 +145,8 @@ class WidgetView extends CControllerDashboardWidgetView {
 		}
 
 		$items_by_key = $this->loadItemsForHosts($hosts, $columns);
+		$active_triggers_by_itemid = $this->loadActiveTriggersForItems($items_by_key);
+		$item_thresholds = $this->parseItemThresholds($fields['item_thresholds']);
 
 		foreach ($hosts as $hostid => $host) {
 			$row = [
@@ -159,7 +158,14 @@ class WidgetView extends CControllerDashboardWidgetView {
 
 			foreach ($columns as $column) {
 				$item = $items_by_key[$column['key_']][$hostid] ?? null;
-				$row['cells'][$column['id']] = $this->buildCell($hostid, $column, $item, $fields);
+				$itemid = $item !== null ? (string) $item['itemid'] : null;
+				$row['cells'][$column['id']] = $this->buildCell(
+					$column,
+					$item,
+					$itemid !== null ? ($active_triggers_by_itemid[$itemid] ?? null) : null,
+					$fields,
+					$item_thresholds[$column['key_']] ?? null
+				);
 			}
 
 			$matrix['rows'][] = $row;
@@ -171,6 +177,53 @@ class WidgetView extends CControllerDashboardWidgetView {
 		}
 
 		return $matrix;
+	}
+
+	private function loadActiveTriggersForItems(array $items_by_key): array {
+		$itemids = [];
+
+		foreach ($items_by_key as $items_by_host) {
+			foreach ($items_by_host as $item) {
+				$itemids[] = $item['itemid'];
+			}
+		}
+
+		$itemids = array_values(array_unique($itemids));
+
+		if (!$itemids) {
+			return [];
+		}
+
+		$db_triggers = API::Trigger()->get([
+			'output' => ['triggerid', 'description', 'priority', 'value'],
+			'itemids' => $itemids,
+			'filter' => ['value' => TRIGGER_VALUE_TRUE],
+			'selectItems' => ['itemid'],
+			'monitored' => true,
+			'preservekeys' => false
+		]);
+
+		if (!$db_triggers) {
+			return [];
+		}
+
+		$triggers_by_itemid = [];
+
+		foreach ($db_triggers as $db_trigger) {
+			foreach ($db_trigger['items'] ?? [] as $db_item) {
+				$itemid = (string) $db_item['itemid'];
+
+				if (!isset($triggers_by_itemid[$itemid])
+						|| (int) $db_trigger['priority'] > $triggers_by_itemid[$itemid]['severity']) {
+					$triggers_by_itemid[$itemid] = [
+						'severity' => (int) $db_trigger['priority'],
+						'description' => $db_trigger['description']
+					];
+				}
+			}
+		}
+
+		return $triggers_by_itemid;
 	}
 
 	private function loadItemsForHosts(array $hosts, array $columns): array {
@@ -198,22 +251,28 @@ class WidgetView extends CControllerDashboardWidgetView {
 		return $items_by_key;
 	}
 
-	private function buildCell(string $hostid, array $column, ?array $item, array $fields): array {
+	private function buildCell(array $column, ?array $item, ?array $active_trigger, array $fields, ?array $column_thresholds): array {
 		if ($item === null) {
 			return [
 				'label' => $fields['missing_label'],
 				'state' => 'missing',
-				'tooltip' => sprintf('%s: %s', $column['label'], $fields['missing_label'])
+				'tooltip' => sprintf('%s: %s', $column['label'], $fields['missing_label']),
+				'icon' => '-',
+				'icon_class' => 'missing'
 			];
 		}
 
 		$value = $item['lastvalue'] !== '' ? $item['lastvalue'] : null;
 		$label = $this->formatValue($value, $column['units']);
-		$state = $this->evaluateState($value, $fields);
+		$state = $this->evaluateState($value, $fields, $active_trigger, $column_thresholds);
 		$tooltip = $item['name'];
 
 		if ($value !== null) {
 			$tooltip .= "\n".sprintf('%s: %s', _('Last value'), $label);
+		}
+
+		if ($active_trigger !== null) {
+			$tooltip .= "\n".sprintf('%s: %s', _('Trigger'), $active_trigger['description']);
 		}
 
 		if ((int) $item['lastclock'] > 0) {
@@ -223,27 +282,34 @@ class WidgetView extends CControllerDashboardWidgetView {
 		return [
 			'label' => $label,
 			'state' => $state,
-			'tooltip' => $tooltip
+			'tooltip' => $tooltip,
+			'icon' => $this->getStateIcon($state),
+			'icon_class' => $this->getStateIconClass($state)
 		];
 	}
 
-	private function evaluateState(?string $value, array $fields): string {
+	private function evaluateState(?string $value, array $fields, ?array $active_trigger, ?array $column_thresholds): string {
 		if ($value === null || $value === '') {
 			return 'missing';
 		}
 
+		if ((int) $fields['state_source'] === Widget::STATE_SOURCE_TRIGGER_FIRST && $active_trigger !== null) {
+			return $this->mapTriggerSeverityToState($active_trigger['severity']);
+		}
+
 		if (is_numeric($value)) {
-			return $this->evaluateNumericState((float) $value, $fields);
+			return $this->evaluateNumericState((float) $value, $fields, $column_thresholds);
 		}
 
 		return $this->evaluateTextState($value, $fields);
 	}
 
-	private function evaluateNumericState(float $value, array $fields): string {
-		$warning = $this->parseNullableNumber($fields['warning_threshold']);
-		$high = $this->parseNullableNumber($fields['high_threshold']);
-		$critical = $this->parseNullableNumber($fields['critical_threshold']);
-		$descending = (int) $fields['threshold_direction'] === Widget::THRESHOLD_DESCENDING;
+	private function evaluateNumericState(float $value, array $fields, ?array $column_thresholds): string {
+		$thresholds = $column_thresholds ?? $this->getGlobalThresholds($fields);
+		$warning = $thresholds['warning'];
+		$high = $thresholds['high'];
+		$critical = $thresholds['critical'];
+		$descending = (int) $thresholds['direction'] === Widget::THRESHOLD_DESCENDING;
 
 		if ($descending) {
 			if ($critical !== null && $value <= $critical) {
@@ -294,6 +360,22 @@ class WidgetView extends CControllerDashboardWidgetView {
 		return 'info';
 	}
 
+	private function mapTriggerSeverityToState(int $severity): string {
+		switch ($severity) {
+			case TRIGGER_SEVERITY_WARNING:
+				return 'warning';
+			case TRIGGER_SEVERITY_AVERAGE:
+				return 'high';
+			case TRIGGER_SEVERITY_HIGH:
+			case TRIGGER_SEVERITY_DISASTER:
+				return 'disaster';
+			case TRIGGER_SEVERITY_NOT_CLASSIFIED:
+			case TRIGGER_SEVERITY_INFORMATION:
+			default:
+				return 'info';
+		}
+	}
+
 	private function matchesAnyPattern(string $value, string $patterns): bool {
 		foreach (array_filter(array_map('trim', explode(',', mb_strtolower($patterns)))) as $pattern) {
 			if ($pattern !== '' && mb_strpos($value, $pattern) !== false) {
@@ -320,14 +402,87 @@ class WidgetView extends CControllerDashboardWidgetView {
 		return is_numeric($value) ? (float) $value : null;
 	}
 
+	private function getGlobalThresholds(array $fields): array {
+		return [
+			'direction' => (int) $fields['threshold_direction'],
+			'warning' => $this->parseNullableNumber($fields['warning_threshold']),
+			'high' => $this->parseNullableNumber($fields['high_threshold']),
+			'critical' => $this->parseNullableNumber($fields['critical_threshold'])
+		];
+	}
+
+	private function parseItemThresholds(string $raw_thresholds): array {
+		$result = [];
+		$lines = preg_split('/\r\n|\r|\n/', trim($raw_thresholds));
+
+		if (!$lines) {
+			return [];
+		}
+
+		foreach ($lines as $line) {
+			$line = trim($line);
+
+			if ($line === '') {
+				continue;
+			}
+
+			$parts = array_map('trim', explode('|', $line));
+
+			if (count($parts) < 5 || $parts[0] === '') {
+				continue;
+			}
+
+			$result[$parts[0]] = [
+				'direction' => $this->parseDirection($parts[1]),
+				'warning' => $this->parseNullableNumber($parts[2]),
+				'high' => $this->parseNullableNumber($parts[3]),
+				'critical' => $this->parseNullableNumber($parts[4])
+			];
+		}
+
+		return $result;
+	}
+
+	private function parseDirection(string $direction): int {
+		$direction = strtolower(trim($direction));
+
+		if (in_array($direction, ['desc', 'down', 'descending', 'lower'], true)) {
+			return Widget::THRESHOLD_DESCENDING;
+		}
+
+		return Widget::THRESHOLD_ASCENDING;
+	}
+
 	private function getLegend(): array {
 		return [
 			['state' => 'ok', 'label' => _('OK')],
-			['state' => 'info', 'label' => _('Text / neutral')],
+			['state' => 'info', 'label' => _('Info')],
 			['state' => 'warning', 'label' => _('Warning')],
 			['state' => 'high', 'label' => _('High')],
 			['state' => 'disaster', 'label' => _('Critical')],
 			['state' => 'missing', 'label' => _('Missing item')]
 		];
+	}
+
+	private function getStateIcon(string $state): string {
+		switch ($state) {
+			case 'ok':
+				return 'v';
+			case 'info':
+				return 'i';
+			case 'warning':
+				return '!';
+			case 'high':
+				return '!';
+			case 'disaster':
+				return 'x';
+			case 'missing':
+			default:
+				return '-';
+		}
+	}
+
+	private function getStateIconClass(string $state): string {
+		return 'matrix-view__icon--'.$state;
 	}
 }

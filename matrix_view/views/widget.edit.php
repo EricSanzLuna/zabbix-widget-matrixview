@@ -10,6 +10,8 @@
 $host_order = new CWidgetFieldSelectView($data['fields']['host_order']);
 $visual_mode = new CWidgetFieldSelectView($data['fields']['visual_mode']);
 $show_maintenance = new CWidgetFieldCheckBoxView($data['fields']['show_maintenance']);
+$state_source = new CWidgetFieldSelectView($data['fields']['state_source']);
+$item_thresholds = new CWidgetFieldTextAreaView($data['fields']['item_thresholds']);
 $threshold_direction = new CWidgetFieldSelectView($data['fields']['threshold_direction']);
 $warning_threshold = new CWidgetFieldNumericBoxView($data['fields']['warning_threshold']);
 $high_threshold = new CWidgetFieldNumericBoxView($data['fields']['high_threshold']);
@@ -43,10 +45,19 @@ $missing_label = new CWidgetFieldTextBoxView($data['fields']['missing_label']);
 	->addItem([
 		new CLabel(_('Color rules')),
 		new CFormField(
-			(new CDiv(_('Numeric values use the thresholds below. Text values use the pattern lists. Example text statuses: running, stopped, failed, warning.')))
+			(new CDiv(_('Use trigger severities when available, with thresholds and text patterns as fallback. You can also override thresholds per selected item.')))
 				->addClass('matrix-view__help')
 		)
 	])
+	->addField($state_source)
+	->addItem([
+		new CLabel(_('Per-item overrides')),
+		new CFormField(
+			(new CDiv(_('One line per selected reference item: key|direction|warning|high|critical. Example: system.cpu.util|asc|70|85|95')))
+				->addClass('matrix-view__help')
+		)
+	])
+	->addField($item_thresholds)
 	->addField($threshold_direction)
 	->addField($warning_threshold)
 	->addField($high_threshold)
