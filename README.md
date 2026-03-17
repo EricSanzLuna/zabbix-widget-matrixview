@@ -1,5 +1,7 @@
 # Matrix View for Zabbix 7.0
 
+English documentation. For the Spanish guide, see [README.es.md](./README.es.md).
+
 `Matrix View` is a dashboard widget for Zabbix 7.0 that renders a matrix of:
 
 - rows = filtered hosts
@@ -7,7 +9,7 @@
 
 The widget is designed for service/status dashboards where you want to compare the same logical item across many hosts, similar to a simplified matrix-style version of `Top hosts`.
 
-## Installation
+## 🚀 Installation
 
 Copy only the `matrix_view` folder into Zabbix frontend modules:
 
@@ -28,9 +30,9 @@ Then:
 3. Enable `Matrix View`
 4. Add the widget to a dashboard
 
-## Configuration
+## ⚙️ Configuration
 
-### Host filters
+### 🖥️ Host filters
 
 - `Host groups`: limits the matrix to hosts in the selected groups
 - `Hosts`: optional explicit host filter
@@ -49,7 +51,7 @@ When a visible host is in maintenance, the host name shows a maintenance indicat
 - whether the maintenance keeps data collection enabled or disabled
 - maintenance end time when available
 
-### Columns
+### 🧱 Columns
 
 The widget uses explicit Zabbix items as reference columns.
 
@@ -67,7 +69,7 @@ Example:
 - select `CPU utilization` from one host
 - if other hosts also have the same `key_`, they will fill that column
 
-### Column aliases
+### 🏷️ Column aliases
 
 You can optionally rename visible column headers in `Column aliases`.
 
@@ -93,7 +95,7 @@ Notes:
 - the alias is only visual; item lookup still uses the original key
 - tooltips keep the full original item name for extra context
 
-### Column order
+### ↔️ Column order
 
 You can manually reorder visible columns in `Column order`.
 
@@ -116,7 +118,7 @@ Notes:
 - columns not listed are rendered afterwards in their original selection order
 - you can mix aliases and item keys
 
-### Per-item thresholds
+### 📏 Per-item thresholds
 
 You can override thresholds for specific selected items in `Per-item thresholds`.
 
@@ -140,11 +142,11 @@ Notes:
 - `direction` accepts `asc` or `desc`
 - if a selected item has no override, global thresholds are used
 
-## Colors and state evaluation
+## 🎨 Colors and state evaluation
 
 The widget supports both numeric and text item values, and can also use active triggers associated with the item.
 
-### Trigger-first mode
+### 🚨 Trigger-first mode
 
 When `State source` is set to `Triggers first, thresholds fallback`:
 
@@ -154,7 +156,7 @@ When `State source` is set to `Triggers first, thresholds fallback`:
 
 This is the recommended mode when your trigger severities already represent the operational importance of each item.
 
-### Indicator colors
+### 🟢 Indicator colors
 
 Each visual state can be customized with a HEX color value:
 
@@ -174,7 +176,7 @@ Accepted formats:
 
 These values control both the icon color and the soft background tint used by the cell.
 
-### Numeric values
+### 🔢 Numeric values
 
 Numeric values use per-item thresholds when defined, otherwise global thresholds:
 
@@ -193,7 +195,7 @@ Example for CPU:
 - High: `85`
 - Critical: `95`
 
-### Text values
+### 🔤 Text values
 
 Text values use pattern matching:
 
@@ -219,7 +221,7 @@ If the item does not exist on a host:
 
 - the cell uses `Missing item label`
 
-## How the matrix is built
+## 🧠 How the matrix is built
 
 For each selected host:
 
@@ -229,7 +231,7 @@ For each selected host:
 4. it renders the latest value
 5. it colors the cell using thresholds or text patterns
 
-## Recommended usage
+## ✅ Recommended usage
 
 This design works especially well when:
 
@@ -244,7 +246,7 @@ Good examples:
 - queue depth / process counts
 - application health flags
 
-## Troubleshooting
+## 🛠️ Troubleshooting
 
 ### Module does not appear in Scan directory
 
@@ -296,7 +298,7 @@ Adjust:
 - numeric thresholds
 - text patterns for OK / Warning / Critical
 
-## Current limitations
+## 📌 Current limitations
 
 - no tag-based `Problems` mode
 - no embedded column editor like `Top hosts`; configuration uses native fields plus text areas for aliases, order and per-item thresholds
