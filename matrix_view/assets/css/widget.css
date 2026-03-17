@@ -28,12 +28,19 @@ div.dashboard-widget-matrix_view .matrix-view {
 }
 
 div.dashboard-widget-matrix_view .matrix-view__warning,
-div.dashboard-widget-matrix_view .matrix-view__empty,
-form.dashboard-widget-matrix_view .matrix-view__help {
+div.dashboard-widget-matrix_view .matrix-view__empty {
 	padding: 10px 12px;
 	border: 1px dashed var(--matrix-border);
 	border-radius: 10px;
 	background: rgba(246, 248, 251, 0.9);
+}
+
+form.dashboard-widget-matrix_view .matrix-view__help {
+	padding: 10px 12px;
+	border: 1px solid rgba(120, 136, 154, 0.35);
+	border-radius: 10px;
+	background: rgba(255, 255, 255, 0.06);
+	color: inherit;
 }
 
 form.dashboard-widget-matrix_view .matrix-view__section-title {

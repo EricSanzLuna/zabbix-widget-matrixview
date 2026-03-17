@@ -67,17 +67,11 @@ else {
 			$cell_content = (new CSpan($cell['label']))->addClass('matrix-view__cell-label');
 			$target = $cell['link'] !== null
 				? (new CLink($cell_content, $cell['link']))
-				: (new CTag('button', true, $cell_content));
-
-			if ($cell['link'] === null) {
-				$target->setAttribute('type', 'button');
-			}
+				: (new CSpan($cell_content));
 
 			$target
 				->addClass('matrix-view__cell-action')
-				->setAttribute('title', $cell['tooltip'])
-				->setAttribute('data-detail', json_encode($cell['detail']) ?: '{}')
-				->setAttribute('data-state', $cell['state']);
+				->setAttribute('title', $cell['tooltip']);
 
 			$table_row->addItem(
 				(new CTag('td', true, $target))

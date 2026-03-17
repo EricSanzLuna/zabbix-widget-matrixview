@@ -21,7 +21,16 @@ $tag_key = new CWidgetFieldTextBoxView($data['fields']['tag_key']);
 $column_order = new CWidgetFieldTextBoxView($data['fields']['column_order']);
 $missing_label = new CWidgetFieldTextBoxView($data['fields']['missing_label']);
 
-(new CWidgetFormView($data))
+$form = new CWidgetFormView($data);
+
+$mode_row = static function($label, $field, string $class): array {
+	return [
+		$label->addClass($class),
+		(new CFormField($field))->addClass($class)
+	];
+};
+
+$form
 	->addField($source_mode)
 	->addField(
 		new CWidgetFieldMultiSelectGroupView($data['fields']['groupids'], $data['captions']['ms']['groups']['groupids'] ?? [])
@@ -40,13 +49,13 @@ $missing_label = new CWidgetFieldTextBoxView($data['fields']['missing_label']);
 				->addClass('matrix-view__help')
 		))->addClass('js-mode-problems')
 	])
-	->addField($tag_key, 'js-mode-problems')
-	->addField($problem_severities, 'js-mode-problems')
-	->addField($ack_filter, 'js-mode-problems')
-	->addField($suppressed_filter, 'js-mode-problems')
-	->addField($maintenance_filter, 'js-mode-problems')
-	->addField($column_order, 'js-mode-problems')
-	->addField($show_problem_count, 'js-mode-problems')
+	->addItem($mode_row($tag_key->getLabel(), $tag_key->getView(), 'js-mode-problems'))
+	->addItem($mode_row($problem_severities->getLabel(), $problem_severities->getView(), 'js-mode-problems'))
+	->addItem($mode_row($ack_filter->getLabel(), $ack_filter->getView(), 'js-mode-problems'))
+	->addItem($mode_row($suppressed_filter->getLabel(), $suppressed_filter->getView(), 'js-mode-problems'))
+	->addItem($mode_row($maintenance_filter->getLabel(), $maintenance_filter->getView(), 'js-mode-problems'))
+	->addItem($mode_row($column_order->getLabel(), $column_order->getView(), 'js-mode-problems'))
+	->addItem($mode_row($show_problem_count->getLabel(), $show_problem_count->getView(), 'js-mode-problems'))
 	->addItem([
 		(new CLabel(_('Latest data mode')))->addClass('js-mode-latest-data matrix-view__section-title'),
 		(new CFormField(
@@ -54,9 +63,9 @@ $missing_label = new CWidgetFieldTextBoxView($data['fields']['missing_label']);
 				->addClass('matrix-view__help')
 		))->addClass('js-mode-latest-data')
 	])
-	->addField($latest_columns, 'js-mode-latest-data')
-	->addField($latest_direction, 'js-mode-latest-data')
-	->addField($missing_label, 'js-mode-latest-data')
+	->addItem($mode_row($latest_columns->getLabel(), $latest_columns->getView(), 'js-mode-latest-data'))
+	->addItem($mode_row($latest_direction->getLabel(), $latest_direction->getView(), 'js-mode-latest-data'))
+	->addItem($mode_row($missing_label->getLabel(), $missing_label->getView(), 'js-mode-latest-data'))
 	->addItem([
 		(new CLabel(_('Latest data syntax')))->addClass('js-mode-latest-data'),
 		(new CFormField(

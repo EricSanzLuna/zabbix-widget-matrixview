@@ -29,7 +29,7 @@ window.widget_matrix_view_form = new class {
 	}
 
 	toggleElement(element, visible) {
-		const row = element.closest('.form_row, .fields-group, li, .table-forms-td-left, .table-forms-td-right') || element;
+		const row = element.closest('tr, .form_row, .fields-group, li, .table-forms-td-left, .table-forms-td-right') || element;
 
 		row.style.display = visible ? '' : 'none';
 	}

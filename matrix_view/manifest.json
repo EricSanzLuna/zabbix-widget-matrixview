@@ -11,15 +11,9 @@
       "class": "WidgetView"
     }
   },
-  "widget": {
-    "js_class": "WidgetMatrixView"
-  },
   "assets": {
     "css": [
       "widget.css"
-    ],
-    "js": [
-      "class.widget.js"
     ]
   }
 }
