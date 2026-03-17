@@ -9,8 +9,10 @@
 
 $host_order = new CWidgetFieldSelectView($data['fields']['host_order']);
 $visual_mode = new CWidgetFieldSelectView($data['fields']['visual_mode']);
+$header_orientation = new CWidgetFieldSelectView($data['fields']['header_orientation']);
 $show_maintenance = new CWidgetFieldCheckBoxView($data['fields']['show_maintenance']);
 $state_source = new CWidgetFieldSelectView($data['fields']['state_source']);
+$columns_config = new CWidgetFieldTextAreaView($data['fields']['columns_config']);
 $column_aliases = new CWidgetFieldTextAreaView($data['fields']['column_aliases']);
 $item_thresholds = new CWidgetFieldTextAreaView($data['fields']['item_thresholds']);
 $threshold_direction = new CWidgetFieldSelectView($data['fields']['threshold_direction']);
@@ -22,7 +24,143 @@ $warning_text = new CWidgetFieldTextBoxView($data['fields']['warning_text']);
 $critical_text = new CWidgetFieldTextBoxView($data['fields']['critical_text']);
 $missing_label = new CWidgetFieldTextBoxView($data['fields']['missing_label']);
 
-(new CWidgetFormView($data))
+$columns_table = (new CTag('table', true))
+	->addClass('matrix-view-editor__table')
+	->addItem(
+		(new CTag('thead', true))->addItem(
+			(new CTag('tr', true))
+				->addItem((new CTag('th', true, ''))->addClass('matrix-view-editor__drag-head'))
+				->addItem(new CTag('th', true, _('Name')))
+				->addItem(new CTag('th', true, _('Data')))
+				->addItem(new CTag('th', true, _('Thresholds')))
+				->addItem(new CTag('th', true, _('Action')))
+		)
+	)
+	->addItem(
+		(new CTag('tbody', true))
+			->addClass('matrix-view-editor__rows')
+			->setAttribute('data-role', 'rows')
+	);
+
+$editor_actions = (new CDiv([
+	(new CButton('matrix_view_add_column', _('Add')))
+		->addClass('js-matrix-view-add-column'),
+	(new CSpan(_('Drag rows to reorder columns.')))
+		->addClass('matrix-view-editor__hint')
+]))->addClass('matrix-view-editor__actions');
+
+$modal = (new CDiv([
+	(new CDiv([
+		(new CDiv(_('Update column')))
+			->addClass('matrix-view-editor__modal-title')
+			->setAttribute('data-role', 'modal-title'),
+		(new CButton('matrix_view_close_column_modal', "\xC3\x97"))
+			->addClass('js-matrix-view-cancel matrix-view-editor__modal-close')
+			->setAttribute('type', 'button'),
+		(new CDiv([
+			(new CTag('label', true, _('Name')))
+				->addClass('matrix-view-editor__label'),
+			(new CTextBox('matrix_view_column_label', ''))
+				->addClass('js-matrix-view-column-label matrix-view-editor__input')
+				->setAttribute('autocomplete', 'off')
+		]))->addClass('matrix-view-editor__field'),
+		(new CDiv([
+			(new CTag('label', true, _('Reference item')))
+				->addClass('matrix-view-editor__label'),
+			(new CTag('select', true))
+				->addClass('js-matrix-view-column-item matrix-view-editor__input'),
+			(new CDiv(_('Choose one of the items selected above. Each reference item can be used once.')))
+				->addClass('matrix-view-editor__subhint')
+		]))->addClass('matrix-view-editor__field'),
+		(new CDiv([
+			(new CTag('label', true, _('Threshold direction')))
+				->addClass('matrix-view-editor__label'),
+			(new CTag('select', true, [
+				(new CTag('option', true, _('Higher values are worse')))->setAttribute('value', 'asc'),
+				(new CTag('option', true, _('Lower values are worse')))->setAttribute('value', 'desc')
+			]))->addClass('js-matrix-view-column-direction matrix-view-editor__input')
+		]))->addClass('matrix-view-editor__field'),
+		(new CDiv([
+			(new CDiv([
+				(new CTag('label', true, _('Warning')))
+					->addClass('matrix-view-editor__label'),
+				(new CTextBox('matrix_view_column_warning', ''))
+					->addClass('js-matrix-view-column-warning matrix-view-editor__input')
+			]))->addClass('matrix-view-editor__field matrix-view-editor__field--threshold'),
+			(new CDiv([
+				(new CTag('label', true, _('High')))
+					->addClass('matrix-view-editor__label'),
+				(new CTextBox('matrix_view_column_high', ''))
+					->addClass('js-matrix-view-column-high matrix-view-editor__input')
+			]))->addClass('matrix-view-editor__field matrix-view-editor__field--threshold'),
+			(new CDiv([
+				(new CTag('label', true, _('Critical')))
+					->addClass('matrix-view-editor__label'),
+				(new CTextBox('matrix_view_column_critical', ''))
+					->addClass('js-matrix-view-column-critical matrix-view-editor__input')
+			]))->addClass('matrix-view-editor__field matrix-view-editor__field--threshold')
+		]))->addClass('matrix-view-editor__threshold-grid'),
+		(new CDiv([
+			(new CButton('matrix_view_save_column', _('Update')))
+				->addClass('js-matrix-view-save-column'),
+			(new CButton('matrix_view_cancel_column', _('Cancel')))
+				->addClass('js-matrix-view-cancel')
+				->setAttribute('type', 'button')
+		]))->addClass('matrix-view-editor__modal-actions')
+	]))->addClass('matrix-view-editor__modal')
+]))->addClass('matrix-view-editor__modal-overlay')
+	->setAttribute('data-role', 'modal')
+	->setAttribute('hidden', 'hidden');
+
+$editor = (new CDiv([
+	$editor_actions,
+	$columns_table,
+	(new CDiv(_('Select one or more reference items above, then use Add to create visible matrix columns. Each column can override its own name and thresholds.')))
+		->addClass('matrix-view__help'),
+	$modal
+]))->addClass('matrix-view-editor')
+	->setAttribute('data-role', 'matrix-view-column-editor');
+
+$storage = (new CDiv([
+	(new CFormField($columns_config))->addClass('matrix-view-editor__storage-field'),
+	(new CFormField($column_aliases))->addClass('matrix-view-editor__storage-field'),
+	(new CFormField($item_thresholds))->addClass('matrix-view-editor__storage-field')
+]))->addClass('matrix-view-editor__storage');
+
+$style = <<<'CSS'
+<style>
+.matrix-view-editor{display:flex;flex-direction:column;gap:10px}
+.matrix-view-editor__actions{display:flex;align-items:center;gap:12px}
+.matrix-view-editor__hint{color:#9ea7b3;font-size:11px}
+.matrix-view-editor__table{width:100%;border-collapse:separate;border-spacing:0;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+.matrix-view-editor__table th,.matrix-view-editor__table td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.06);text-align:left}
+.matrix-view-editor__table th{color:#9ea7b3;font-size:11px}
+.matrix-view-editor__table tr:last-child td{border-bottom:0}
+.matrix-view-editor__drag-head{width:18px}
+.matrix-view-editor__drag{cursor:grab;color:#7f8792;user-select:none}
+.matrix-view-editor__row--dragging{opacity:.45}
+.matrix-view-editor__actions-cell{display:flex;gap:10px}
+.matrix-view-editor__link{background:none;border:0;padding:0;color:#6ab7ff;cursor:pointer}
+.matrix-view-editor__data-cell{color:#cfd6df;font-size:12px}
+.matrix-view-editor__thresholds-cell{color:#9ea7b3;font-size:11px}
+.matrix-view-editor__empty td{color:#9ea7b3;font-style:italic}
+.matrix-view-editor__modal-overlay{position:fixed;inset:0;background:rgba(10,12,15,.62);display:flex;align-items:center;justify-content:center;z-index:1000}
+.matrix-view-editor__modal{position:relative;width:min(640px,calc(100vw - 48px));background:#2b2b2b;border:1px solid rgba(255,255,255,.09);box-shadow:0 16px 48px rgba(0,0,0,.45);padding:20px;display:flex;flex-direction:column;gap:14px}
+.matrix-view-editor__modal-title{font-size:20px;font-weight:600;color:#fff}
+.matrix-view-editor__modal-close{position:absolute;right:22px;top:18px;min-width:auto;padding:0 6px}
+.matrix-view-editor__field{display:flex;flex-direction:column;gap:6px}
+.matrix-view-editor__field--threshold{min-width:0}
+.matrix-view-editor__threshold-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.matrix-view-editor__label{color:#cbd3dc;font-size:12px}
+.matrix-view-editor__subhint{color:#8e98a4;font-size:11px}
+.matrix-view-editor__input{width:100%}
+.matrix-view-editor__modal-actions{display:flex;justify-content:flex-end;gap:10px}
+.matrix-view-editor__storage{display:none}
+</style>
+CSS;
+
+$form = (new CWidgetFormView($data))
+	->addItem($style)
 	->addField(
 		new CWidgetFieldMultiSelectGroupView($data['fields']['groupids'], $data['captions']['ms']['groups']['groupids'] ?? [])
 	)
@@ -33,10 +171,11 @@ $missing_label = new CWidgetFieldTextBoxView($data['fields']['missing_label']);
 	->addField($host_order)
 	->addField(new CWidgetFieldIntegerBoxView($data['fields']['limit_hosts']))
 	->addField($visual_mode)
+	->addField($header_orientation)
 	->addItem([
-		new CLabel(_('Columns')),
+		new CLabel(_('Available items')),
 		new CFormField(
-			(new CDiv(_('Select one or more reference items. The widget will use each selected item key as a column and search for that same key on every filtered host.')))
+			(new CDiv(_('Select the items that can be used by the column editor.')))
 				->addClass('matrix-view__help')
 		)
 	])
@@ -44,29 +183,17 @@ $missing_label = new CWidgetFieldTextBoxView($data['fields']['missing_label']);
 		new CWidgetFieldMultiSelectItemView($data['fields']['itemids'], $data['captions']['ms']['items']['itemids'] ?? [])
 	)
 	->addItem([
-		new CLabel(_('Column aliases')),
-		new CFormField(
-			(new CDiv(_('Optional aliases by item key. One line per selected reference item: key|alias. Example: service.info[W3SVC,state]|IIS')))
-				->addClass('matrix-view__help')
-		)
+		new CLabel(_('Columns')),
+		new CFormField($editor)
 	])
-	->addField($column_aliases)
 	->addItem([
 		new CLabel(_('Color rules')),
 		new CFormField(
-			(new CDiv(_('Use trigger severities when available, with thresholds and text patterns as fallback. You can also override thresholds per selected item.')))
+			(new CDiv(_('Use trigger severities when available, with thresholds and text patterns as fallback. Per-column overrides are managed in the editor above.')))
 				->addClass('matrix-view__help')
 		)
 	])
 	->addField($state_source)
-	->addItem([
-		new CLabel(_('Per-item overrides')),
-		new CFormField(
-			(new CDiv(_('One line per selected reference item: key|direction|warning|high|critical. Example: system.cpu.util|asc|70|85|95')))
-				->addClass('matrix-view__help')
-		)
-	])
-	->addField($item_thresholds)
 	->addField($threshold_direction)
 	->addField($warning_threshold)
 	->addField($high_threshold)
@@ -75,4 +202,10 @@ $missing_label = new CWidgetFieldTextBoxView($data['fields']['missing_label']);
 	->addField($warning_text)
 	->addField($critical_text)
 	->addField($missing_label)
-	->show();
+	->addItem($storage)
+	->includeJsFile('widget.edit.js.php')
+	->addJavaScript('window.matrixViewColumnEditorInit && window.matrixViewColumnEditorInit('.json_encode([
+		'item_captions' => $data['captions']['ms']['items']['itemids'] ?? []
+	]).');');
+
+$form->show();

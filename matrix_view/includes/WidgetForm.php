@@ -47,8 +47,18 @@ class WidgetForm extends CWidgetForm {
 				]))->setDefault(Widget::VISUAL_COMPACT)
 			)
 			->addField(
+				(new CWidgetFieldSelect('header_orientation', _('Header orientation'), [
+					Widget::HEADER_DIAGONAL => _('Diagonal'),
+					Widget::HEADER_HORIZONTAL => _('Horizontal'),
+					Widget::HEADER_VERTICAL => _('Vertical')
+				]))->setDefault(Widget::HEADER_DIAGONAL)
+			)
+			->addField(
 				(new CWidgetFieldMultiSelectItem('itemids', _('Columns')))
 					->setFlags(CWidgetField::FLAG_NOT_EMPTY | CWidgetField::FLAG_LABEL_ASTERISK)
+			)
+			->addField(
+				new CWidgetFieldTextArea('columns_config', _('Columns config'))
 			)
 			->addField(
 				new CWidgetFieldTextArea('column_aliases', _('Column aliases'))

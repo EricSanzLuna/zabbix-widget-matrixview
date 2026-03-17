@@ -34,7 +34,9 @@ class WidgetView extends CControllerDashboardWidgetView {
 			'host_order' => Widget::ORDER_NAME_ASC,
 			'limit_hosts' => 25,
 			'visual_mode' => Widget::VISUAL_COMPACT,
+			'header_orientation' => Widget::HEADER_DIAGONAL,
 			'itemids' => [],
+			'columns_config' => '',
 			'column_aliases' => '',
 			'state_source' => Widget::STATE_SOURCE_TRIGGER_FIRST,
 			'item_thresholds' => '',
@@ -94,16 +96,21 @@ class WidgetView extends CControllerDashboardWidgetView {
 	}
 
 	private function getReferenceItems(array $fields): array {
-		if (!$fields['itemids']) {
+		$configured_columns = $this->parseColumnsConfig($fields['columns_config']);
+
+		if ($configured_columns === null && !$fields['itemids']) {
 			return [];
 		}
 
 		$column_aliases = $this->parseColumnAliases($fields['column_aliases']);
+		$itemids = $configured_columns !== null
+			? array_column($configured_columns, 'itemid')
+			: $fields['itemids'];
 
 		$db_items = API::Item()->get([
 			'output' => ['itemid', 'name', 'key_', 'units', 'value_type'],
-			'itemids' => $fields['itemids'],
-			'preservekeys' => false
+			'itemids' => $itemids,
+			'preservekeys' => true
 		]);
 
 		if (!$db_items) {
@@ -111,6 +118,39 @@ class WidgetView extends CControllerDashboardWidgetView {
 		}
 
 		$columns = [];
+
+		if ($configured_columns !== null) {
+			foreach ($configured_columns as $configured_column) {
+				$itemid = $configured_column['itemid'];
+
+				if (!array_key_exists($itemid, $db_items)) {
+					continue;
+				}
+
+				$db_item = $db_items[$itemid];
+				$full_label = $db_item['name'];
+				$display_label = $configured_column['label'] !== ''
+					? $configured_column['label']
+					: ($column_aliases[$db_item['key_']] ?? $full_label);
+
+				$columns[] = [
+					'id' => (string) $db_item['itemid'],
+					'label' => $display_label,
+					'full_label' => $full_label,
+					'key_' => $db_item['key_'],
+					'units' => $db_item['units'],
+					'value_type' => (int) $db_item['value_type'],
+					'thresholds' => [
+						'direction' => $configured_column['direction'],
+						'warning' => $configured_column['warning'],
+						'high' => $configured_column['high'],
+						'critical' => $configured_column['critical']
+					]
+				];
+			}
+
+			return $columns;
+		}
 
 		foreach ($db_items as $db_item) {
 			$column_id = (string) $db_item['itemid'];
@@ -123,7 +163,8 @@ class WidgetView extends CControllerDashboardWidgetView {
 				'full_label' => $full_label,
 				'key_' => $db_item['key_'],
 				'units' => $db_item['units'],
-				'value_type' => (int) $db_item['value_type']
+				'value_type' => (int) $db_item['value_type'],
+				'thresholds' => null
 			];
 		}
 
@@ -177,7 +218,7 @@ class WidgetView extends CControllerDashboardWidgetView {
 					$item,
 					$itemid !== null ? ($active_triggers_by_itemid[$itemid] ?? null) : null,
 					$fields,
-					$item_thresholds[$column['key_']] ?? null
+					$column['thresholds'] ?? ($item_thresholds[$column['key_']] ?? null)
 				);
 			}
 
@@ -505,6 +546,43 @@ class WidgetView extends CControllerDashboardWidgetView {
 			}
 
 			$result[$parts[0]] = $parts[1];
+		}
+
+		return $result;
+	}
+
+	private function parseColumnsConfig(string $raw_config): ?array {
+		if (trim($raw_config) === '') {
+			return null;
+		}
+
+		$config = json_decode($raw_config, true);
+
+		if (!is_array($config)) {
+			return null;
+		}
+
+		$result = [];
+
+		foreach ($config as $column) {
+			if (!is_array($column) || !array_key_exists('itemid', $column)) {
+				continue;
+			}
+
+			$itemid = trim((string) $column['itemid']);
+
+			if ($itemid === '') {
+				continue;
+			}
+
+			$result[] = [
+				'itemid' => $itemid,
+				'label' => trim((string) ($column['label'] ?? '')),
+				'direction' => $this->parseDirection((string) ($column['direction'] ?? 'asc')),
+				'warning' => $this->parseNullableNumber($column['warning'] ?? null),
+				'high' => $this->parseNullableNumber($column['high'] ?? null),
+				'critical' => $this->parseNullableNumber($column['critical'] ?? null)
+			];
 		}
 
 		return $result;

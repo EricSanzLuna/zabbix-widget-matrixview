@@ -14,6 +14,11 @@ $wrapper->addClass($fields['visual_mode'] == \Modules\MatrixView\Widget::VISUAL_
 	? 'matrix-view--comfortable'
 	: 'matrix-view--compact'
 );
+$wrapper->addClass(match ((int) ($fields['header_orientation'] ?? \Modules\MatrixView\Widget::HEADER_DIAGONAL)) {
+	\Modules\MatrixView\Widget::HEADER_HORIZONTAL => 'matrix-view--headers-horizontal',
+	\Modules\MatrixView\Widget::HEADER_VERTICAL => 'matrix-view--headers-vertical',
+	default => 'matrix-view--headers-diagonal'
+});
 
 $shorten_label = static function(string $label): string {
 	if (preg_match('/"([^"]+)"/', $label, $matches) === 1) {
@@ -61,7 +66,7 @@ else {
 	$thead = new CTag('thead', true);
 	$header_row = new CTag('tr', true);
 	$header_row->addItem(
-		(new CTag('th', true, _('Host')))->addClass('matrix-view__sticky-col matrix-view__sticky-head matrix-view__host-head')
+		(new CTag('th', true, _('Host Name')))->addClass('matrix-view__sticky-col matrix-view__sticky-head matrix-view__host-head')
 	);
 
 	foreach ($matrix['columns'] as $column) {

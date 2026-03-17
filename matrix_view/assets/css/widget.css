@@ -119,6 +119,37 @@ div.dashboard-widget-matrix_view .matrix-view__column-label {
 	white-space: normal;
 }
 
+div.dashboard-widget-matrix_view .matrix-view--headers-horizontal .matrix-view__column-head {
+	height: auto;
+	min-width: 120px;
+	max-width: 120px;
+	vertical-align: middle;
+}
+
+div.dashboard-widget-matrix_view .matrix-view--headers-horizontal .matrix-view__column-label {
+	width: auto;
+	max-width: 120px;
+	transform: none;
+	transform-origin: center;
+	padding: 10px 6px 8px;
+	line-height: 1.15;
+	white-space: normal;
+}
+
+div.dashboard-widget-matrix_view .matrix-view--headers-vertical .matrix-view__column-head {
+	height: 132px;
+	min-width: 52px;
+	max-width: 52px;
+}
+
+div.dashboard-widget-matrix_view .matrix-view--headers-vertical .matrix-view__column-label {
+	width: 120px;
+	max-width: 120px;
+	transform: translate(-33px, 42px) rotate(-90deg);
+	transform-origin: left top;
+	line-height: 1.05;
+}
+
 div.dashboard-widget-matrix_view .matrix-view__sticky-col {
 	position: sticky;
 	left: 0;
@@ -426,6 +457,29 @@ div.dashboard-widget-matrix_view .matrix-view__cell--missing .matrix-view__value
 		width: 82px;
 		max-width: 82px;
 		transform: translate(9px, 11px) rotate(-43deg);
+		font-size: 8px;
+	}
+
+	div.dashboard-widget-matrix_view .matrix-view--headers-horizontal .matrix-view__column-head {
+		min-width: 100px;
+		max-width: 100px;
+	}
+
+	div.dashboard-widget-matrix_view .matrix-view--headers-horizontal .matrix-view__column-label {
+		max-width: 100px;
+		transform: none;
+	}
+
+	div.dashboard-widget-matrix_view .matrix-view--headers-vertical .matrix-view__column-head {
+		height: 112px;
+		min-width: 46px;
+		max-width: 46px;
+	}
+
+	div.dashboard-widget-matrix_view .matrix-view--headers-vertical .matrix-view__column-label {
+		width: 100px;
+		max-width: 100px;
+		transform: translate(-28px, 35px) rotate(-90deg);
 		font-size: 8px;
 	}
 }

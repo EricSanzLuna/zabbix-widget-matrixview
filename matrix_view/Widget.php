@@ -9,6 +9,10 @@ class Widget extends CWidget {
 	public const VISUAL_COMPACT = 0;
 	public const VISUAL_COMFORTABLE = 1;
 
+	public const HEADER_DIAGONAL = 0;
+	public const HEADER_HORIZONTAL = 1;
+	public const HEADER_VERTICAL = 2;
+
 	public const ORDER_NAME_ASC = 0;
 	public const ORDER_NAME_DESC = 1;
 
