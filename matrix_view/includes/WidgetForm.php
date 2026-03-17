@@ -91,6 +91,30 @@ class WidgetForm extends CWidgetForm {
 					->setDefault('95')
 			)
 			->addField(
+				(new CWidgetFieldTextBox('color_ok', _('OK color')))
+					->setDefault('#4bb476')
+			)
+			->addField(
+				(new CWidgetFieldTextBox('color_info', _('Info color')))
+					->setDefault('#5d86bb')
+			)
+			->addField(
+				(new CWidgetFieldTextBox('color_warning', _('Warning color')))
+					->setDefault('#d9a24a')
+			)
+			->addField(
+				(new CWidgetFieldTextBox('color_high', _('High color')))
+					->setDefault('#ea8d3a')
+			)
+			->addField(
+				(new CWidgetFieldTextBox('color_critical', _('Critical color')))
+					->setDefault('#d35353')
+			)
+			->addField(
+				(new CWidgetFieldTextBox('color_missing', _('Missing item color')))
+					->setDefault('#7f8792')
+			)
+			->addField(
 				(new CWidgetFieldTextBox('ok_text', _('OK text patterns')))
 					->setDefault('running,up,ok,healthy,1')
 			)

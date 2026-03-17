@@ -19,6 +19,12 @@ $threshold_direction = new CWidgetFieldSelectView($data['fields']['threshold_dir
 $warning_threshold = new CWidgetFieldNumericBoxView($data['fields']['warning_threshold']);
 $high_threshold = new CWidgetFieldNumericBoxView($data['fields']['high_threshold']);
 $critical_threshold = new CWidgetFieldNumericBoxView($data['fields']['critical_threshold']);
+$color_ok = new CWidgetFieldTextBoxView($data['fields']['color_ok']);
+$color_info = new CWidgetFieldTextBoxView($data['fields']['color_info']);
+$color_warning = new CWidgetFieldTextBoxView($data['fields']['color_warning']);
+$color_high = new CWidgetFieldTextBoxView($data['fields']['color_high']);
+$color_critical = new CWidgetFieldTextBoxView($data['fields']['color_critical']);
+$color_missing = new CWidgetFieldTextBoxView($data['fields']['color_missing']);
 $ok_text = new CWidgetFieldTextBoxView($data['fields']['ok_text']);
 $warning_text = new CWidgetFieldTextBoxView($data['fields']['warning_text']);
 $critical_text = new CWidgetFieldTextBoxView($data['fields']['critical_text']);
@@ -121,12 +127,6 @@ $editor = (new CDiv([
 ]))->addClass('matrix-view-editor')
 	->setAttribute('data-role', 'matrix-view-column-editor');
 
-$storage = (new CDiv([
-	(new CFormField($columns_config))->addClass('matrix-view-editor__storage-field'),
-	(new CFormField($column_aliases))->addClass('matrix-view-editor__storage-field'),
-	(new CFormField($item_thresholds))->addClass('matrix-view-editor__storage-field')
-]))->addClass('matrix-view-editor__storage');
-
 $style = <<<'CSS'
 <style>
 .matrix-view-editor{display:flex;flex-direction:column;gap:10px}
@@ -154,6 +154,7 @@ $style = <<<'CSS'
 .matrix-view-editor__label{color:#cbd3dc;font-size:12px}
 .matrix-view-editor__subhint{color:#8e98a4;font-size:11px}
 .matrix-view-editor__input{width:100%}
+.matrix-view-editor__colors{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
 .matrix-view-editor__modal-actions{display:flex;justify-content:flex-end;gap:10px}
 .matrix-view-editor__storage{display:none}
 </style>
@@ -198,11 +199,30 @@ $form = (new CWidgetFormView($data))
 	->addField($warning_threshold)
 	->addField($high_threshold)
 	->addField($critical_threshold)
+	->addItem([
+		new CLabel(_('Indicator colors')),
+		new CFormField(
+			(new CDiv(_('Use HEX colors like #4bb476. These colors drive the icon and the soft cell tint for each state.')))
+				->addClass('matrix-view__help')
+		)
+	])
+	->addItem(
+		(new CDiv([
+			(new CFormField($color_ok))->addClass('matrix-view-editor__field'),
+			(new CFormField($color_info))->addClass('matrix-view-editor__field'),
+			(new CFormField($color_warning))->addClass('matrix-view-editor__field'),
+			(new CFormField($color_high))->addClass('matrix-view-editor__field'),
+			(new CFormField($color_critical))->addClass('matrix-view-editor__field'),
+			(new CFormField($color_missing))->addClass('matrix-view-editor__field')
+		]))->addClass('matrix-view-editor__colors')
+	)
 	->addField($ok_text)
 	->addField($warning_text)
 	->addField($critical_text)
 	->addField($missing_label)
-	->addItem($storage)
+	->addField($columns_config, 'matrix-view-editor__storage')
+	->addField($column_aliases, 'matrix-view-editor__storage')
+	->addField($item_thresholds, 'matrix-view-editor__storage')
 	->includeJsFile('widget.edit.js.php')
 	->addJavaScript('window.matrixViewColumnEditorInit && window.matrixViewColumnEditorInit('.json_encode([
 		'item_captions' => $data['captions']['ms']['items']['itemids'] ?? []

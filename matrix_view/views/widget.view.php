@@ -20,6 +20,60 @@ $wrapper->addClass(match ((int) ($fields['header_orientation'] ?? \Modules\Matri
 	default => 'matrix-view--headers-diagonal'
 });
 
+$normalize_hex = static function(?string $color, string $default): string {
+	$color = trim((string) $color);
+
+	if (preg_match('/^#[0-9a-fA-F]{6}$/', $color) === 1) {
+		return strtolower($color);
+	}
+
+	if (preg_match('/^#[0-9a-fA-F]{3}$/', $color) === 1) {
+		return strtolower($color);
+	}
+
+	return $default;
+};
+
+$hex_to_rgba = static function(string $hex, float $alpha): string {
+	$hex = ltrim($hex, '#');
+
+	if (strlen($hex) === 3) {
+		$hex = $hex[0].$hex[0].$hex[1].$hex[1].$hex[2].$hex[2];
+	}
+
+	return sprintf(
+		'rgba(%d, %d, %d, %.2f)',
+		hexdec(substr($hex, 0, 2)),
+		hexdec(substr($hex, 2, 2)),
+		hexdec(substr($hex, 4, 2)),
+		$alpha
+	);
+};
+
+$colors = [
+	'ok' => $normalize_hex($fields['color_ok'] ?? '', '#4bb476'),
+	'info' => $normalize_hex($fields['color_info'] ?? '', '#5d86bb'),
+	'warning' => $normalize_hex($fields['color_warning'] ?? '', '#d9a24a'),
+	'high' => $normalize_hex($fields['color_high'] ?? '', '#ea8d3a'),
+	'critical' => $normalize_hex($fields['color_critical'] ?? '', '#d35353'),
+	'missing' => $normalize_hex($fields['color_missing'] ?? '', '#7f8792')
+];
+
+$wrapper->setAttribute('style', implode('; ', [
+	'--matrix-ok: '.$colors['ok'],
+	'--matrix-info: '.$colors['info'],
+	'--matrix-warning: '.$colors['warning'],
+	'--matrix-high: '.$colors['high'],
+	'--matrix-disaster: '.$colors['critical'],
+	'--matrix-missing: '.$colors['missing'],
+	'--matrix-ok-bg: '.$hex_to_rgba($colors['ok'], 0.25),
+	'--matrix-info-bg: '.$hex_to_rgba($colors['info'], 0.28),
+	'--matrix-warning-bg: '.$hex_to_rgba($colors['warning'], 0.28),
+	'--matrix-high-bg: '.$hex_to_rgba($colors['high'], 0.32),
+	'--matrix-disaster-bg: '.$hex_to_rgba($colors['critical'], 0.35),
+	'--matrix-missing-bg: '.$hex_to_rgba($colors['missing'], 0.18)
+]));
+
 $shorten_label = static function(string $label): string {
 	if (preg_match('/"([^"]+)"/', $label, $matches) === 1) {
 		return $matches[1];
