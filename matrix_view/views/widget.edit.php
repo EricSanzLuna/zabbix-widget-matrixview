@@ -49,8 +49,9 @@ $columns_table = (new CTag('table', true))
 	);
 
 $editor_actions = (new CDiv([
-	(new CButton('matrix_view_add_column', _('Add')))
-		->addClass('js-matrix-view-add-column'),
+	(new CTag('button', true, _('Add')))
+		->addClass('js-matrix-view-add-column')
+		->setAttribute('type', 'button'),
 	(new CSpan(_('Drag rows to reorder columns.')))
 		->addClass('matrix-view-editor__hint')
 ]))->addClass('matrix-view-editor__actions');
@@ -60,14 +61,17 @@ $modal = (new CDiv([
 		(new CDiv(_('Update column')))
 			->addClass('matrix-view-editor__modal-title')
 			->setAttribute('data-role', 'modal-title'),
-		(new CButton('matrix_view_close_column_modal', "\xC3\x97"))
+		(new CTag('button', true, "\xC3\x97"))
 			->addClass('js-matrix-view-cancel matrix-view-editor__modal-close')
 			->setAttribute('type', 'button'),
 		(new CDiv([
 			(new CTag('label', true, _('Name')))
 				->addClass('matrix-view-editor__label'),
-			(new CTextBox('matrix_view_column_label', ''))
+			(new CTag('input', false))
 				->addClass('js-matrix-view-column-label matrix-view-editor__input')
+				->setAttribute('type', 'text')
+				->setAttribute('name', 'matrix_view_column_label')
+				->setAttribute('value', '')
 				->setAttribute('autocomplete', 'off')
 		]))->addClass('matrix-view-editor__field'),
 		(new CDiv([
@@ -90,26 +94,36 @@ $modal = (new CDiv([
 			(new CDiv([
 				(new CTag('label', true, _('Warning')))
 					->addClass('matrix-view-editor__label'),
-				(new CTextBox('matrix_view_column_warning', ''))
+				(new CTag('input', false))
 					->addClass('js-matrix-view-column-warning matrix-view-editor__input')
+					->setAttribute('type', 'text')
+					->setAttribute('name', 'matrix_view_column_warning')
+					->setAttribute('value', '')
 			]))->addClass('matrix-view-editor__field matrix-view-editor__field--threshold'),
 			(new CDiv([
 				(new CTag('label', true, _('High')))
 					->addClass('matrix-view-editor__label'),
-				(new CTextBox('matrix_view_column_high', ''))
+				(new CTag('input', false))
 					->addClass('js-matrix-view-column-high matrix-view-editor__input')
+					->setAttribute('type', 'text')
+					->setAttribute('name', 'matrix_view_column_high')
+					->setAttribute('value', '')
 			]))->addClass('matrix-view-editor__field matrix-view-editor__field--threshold'),
 			(new CDiv([
 				(new CTag('label', true, _('Critical')))
 					->addClass('matrix-view-editor__label'),
-				(new CTextBox('matrix_view_column_critical', ''))
+				(new CTag('input', false))
 					->addClass('js-matrix-view-column-critical matrix-view-editor__input')
+					->setAttribute('type', 'text')
+					->setAttribute('name', 'matrix_view_column_critical')
+					->setAttribute('value', '')
 			]))->addClass('matrix-view-editor__field matrix-view-editor__field--threshold')
 		]))->addClass('matrix-view-editor__threshold-grid'),
 		(new CDiv([
-			(new CButton('matrix_view_save_column', _('Update')))
-				->addClass('js-matrix-view-save-column'),
-			(new CButton('matrix_view_cancel_column', _('Cancel')))
+			(new CTag('button', true, _('Update')))
+				->addClass('js-matrix-view-save-column')
+				->setAttribute('type', 'button'),
+			(new CTag('button', true, _('Cancel')))
 				->addClass('js-matrix-view-cancel')
 				->setAttribute('type', 'button')
 		]))->addClass('matrix-view-editor__modal-actions')
