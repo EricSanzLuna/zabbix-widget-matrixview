@@ -10,6 +10,7 @@
 $host_order = new CWidgetFieldSelectView($data['fields']['host_order']);
 $visual_mode = new CWidgetFieldSelectView($data['fields']['visual_mode']);
 $header_orientation = new CWidgetFieldSelectView($data['fields']['header_orientation']);
+$show_legend = new CWidgetFieldCheckBoxView($data['fields']['show_legend']);
 $show_maintenance = new CWidgetFieldCheckBoxView($data['fields']['show_maintenance']);
 $state_source = new CWidgetFieldSelectView($data['fields']['state_source']);
 $threshold_direction = new CWidgetFieldSelectView($data['fields']['threshold_direction']);
@@ -41,6 +42,7 @@ $missing_label = new CWidgetFieldTextBoxView($data['fields']['missing_label']);
 	->addField(new CWidgetFieldIntegerBoxView($data['fields']['limit_hosts']))
 	->addField($visual_mode)
 	->addField($header_orientation)
+	->addField($show_legend)
 	->addItem([
 		new CLabel(_('Columns')),
 		new CFormField(

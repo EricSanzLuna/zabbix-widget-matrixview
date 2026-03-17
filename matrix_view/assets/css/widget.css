@@ -11,12 +11,12 @@ form.dashboard-widget-matrix_view {
 	--matrix-disaster: #d35353;
 	--matrix-info: #5d86bb;
 	--matrix-missing: #7f8792;
-	--matrix-ok-bg: rgba(75, 180, 118, 0.25);
-	--matrix-warning-bg: rgba(217, 162, 74, 0.28);
-	--matrix-high-bg: rgba(234, 141, 58, 0.32);
-	--matrix-disaster-bg: rgba(211, 83, 83, 0.35);
-	--matrix-info-bg: rgba(93, 134, 187, 0.28);
-	--matrix-missing-bg: rgba(255, 255, 255, 0.08);
+	--matrix-ok-bg: rgba(75, 180, 118, 0.38);
+	--matrix-warning-bg: rgba(217, 162, 74, 0.42);
+	--matrix-high-bg: rgba(234, 141, 58, 0.48);
+	--matrix-disaster-bg: rgba(211, 83, 83, 0.52);
+	--matrix-info-bg: rgba(93, 134, 187, 0.4);
+	--matrix-missing-bg: rgba(127, 135, 146, 0.24);
 }
 
 div.dashboard-widget-matrix_view .matrix-view {
@@ -206,8 +206,8 @@ div.dashboard-widget-matrix_view .matrix-view__cell-action {
 	min-height: 34px;
 	padding: 5px 4px 4px;
 	border-radius: 8px;
-	background: rgba(255, 255, 255, 0.015);
-	box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+	background: rgba(255, 255, 255, 0.02);
+	box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03);
 	font-size: 10px;
 }
 
@@ -220,11 +220,12 @@ div.dashboard-widget-matrix_view .matrix-view__icon,
 div.dashboard-widget-matrix_view .matrix-view__legend-symbol {
 	width: 24px;
 	height: 24px;
+	border-radius: 999px;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
 	position: relative;
-	background: rgba(255, 255, 255, 0.02);
+	background: rgba(255, 255, 255, 0.04);
 	box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.16);
 	transform: translateZ(0);
 	transition: background 0.2s ease, transform 0.2s ease;
@@ -266,33 +267,33 @@ div.dashboard-widget-matrix_view .matrix-view__cell--missing {
 }
 
 div.dashboard-widget-matrix_view .matrix-view__cell--ok .matrix-view__cell-action {
-	background: rgba(75, 180, 118, 0.08);
+	background: rgba(75, 180, 118, 0.14);
 }
 
 div.dashboard-widget-matrix_view .matrix-view__cell--info .matrix-view__cell-action {
-	background: rgba(93, 134, 187, 0.08);
+	background: rgba(93, 134, 187, 0.14);
 }
 
 div.dashboard-widget-matrix_view .matrix-view__cell--warning .matrix-view__cell-action {
-	background: rgba(217, 162, 74, 0.09);
+	background: rgba(217, 162, 74, 0.16);
 }
 
 div.dashboard-widget-matrix_view .matrix-view__cell--high .matrix-view__cell-action {
-	background: rgba(234, 141, 58, 0.1);
+	background: rgba(234, 141, 58, 0.18);
 }
 
 div.dashboard-widget-matrix_view .matrix-view__cell--disaster .matrix-view__cell-action {
-	background: rgba(211, 83, 83, 0.15);
+	background: rgba(211, 83, 83, 0.22);
 }
 
 div.dashboard-widget-matrix_view .matrix-view__cell--missing .matrix-view__cell-action {
-	background: rgba(255, 255, 255, 0.012);
+	background: rgba(127, 135, 146, 0.08);
 }
 
 div.dashboard-widget-matrix_view .matrix-view__cell--ok .matrix-view__icon,
 div.dashboard-widget-matrix_view .matrix-view__legend-symbol.matrix-view__cell--ok {
 	background: var(--matrix-ok-bg);
-	color: #173a24;
+	color: var(--matrix-ok);
 }
 
 div.dashboard-widget-matrix_view .matrix-view__cell--ok .matrix-view__icon::after,
@@ -318,7 +319,7 @@ div.dashboard-widget-matrix_view .matrix-view__legend-symbol.matrix-view__cell--
 div.dashboard-widget-matrix_view .matrix-view__cell--info .matrix-view__icon,
 div.dashboard-widget-matrix_view .matrix-view__legend-symbol.matrix-view__cell--info {
 	background: var(--matrix-info-bg);
-	color: #172b43;
+	color: var(--matrix-info);
 }
 
 div.dashboard-widget-matrix_view .matrix-view__cell--info .matrix-view__icon::after,
@@ -342,7 +343,7 @@ div.dashboard-widget-matrix_view .matrix-view__legend-symbol.matrix-view__cell--
 div.dashboard-widget-matrix_view .matrix-view__cell--warning .matrix-view__icon,
 div.dashboard-widget-matrix_view .matrix-view__legend-symbol.matrix-view__cell--warning {
 	background: var(--matrix-warning-bg);
-	color: #523600;
+	color: var(--matrix-warning);
 }
 
 div.dashboard-widget-matrix_view .matrix-view__cell--warning .matrix-view__icon::after,
@@ -367,7 +368,7 @@ div.dashboard-widget-matrix_view .matrix-view__legend-symbol.matrix-view__cell--
 div.dashboard-widget-matrix_view .matrix-view__cell--high .matrix-view__icon,
 div.dashboard-widget-matrix_view .matrix-view__legend-symbol.matrix-view__cell--high {
 	background: var(--matrix-high-bg);
-	color: #552800;
+	color: var(--matrix-high);
 }
 
 div.dashboard-widget-matrix_view .matrix-view__cell--high .matrix-view__icon::after,
@@ -397,7 +398,7 @@ div.dashboard-widget-matrix_view .matrix-view__legend-symbol.matrix-view__cell--
 div.dashboard-widget-matrix_view .matrix-view__cell--disaster .matrix-view__icon,
 div.dashboard-widget-matrix_view .matrix-view__legend-symbol.matrix-view__cell--disaster {
 	background: var(--matrix-disaster-bg);
-	color: #4d1515;
+	color: var(--matrix-disaster);
 }
 
 div.dashboard-widget-matrix_view .matrix-view__cell--disaster .matrix-view__icon::after,
@@ -426,7 +427,7 @@ div.dashboard-widget-matrix_view .matrix-view__cell--missing .matrix-view__icon,
 div.dashboard-widget-matrix_view .matrix-view__legend-symbol.matrix-view__cell--missing {
 	background: var(--matrix-missing-bg);
 	color: var(--matrix-missing);
-	border: 1px solid rgba(255, 255, 255, 0.16);
+	border: 1px solid rgba(255, 255, 255, 0.12);
 	box-shadow: none;
 }
 

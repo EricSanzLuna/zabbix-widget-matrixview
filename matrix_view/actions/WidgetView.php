@@ -35,6 +35,7 @@ class WidgetView extends CControllerDashboardWidgetView {
 			'limit_hosts' => 25,
 			'visual_mode' => Widget::VISUAL_COMPACT,
 			'header_orientation' => Widget::HEADER_DIAGONAL,
+			'show_legend' => 1,
 			'itemids' => [],
 			'column_aliases' => '',
 			'state_source' => Widget::STATE_SOURCE_TRIGGER_FIRST,

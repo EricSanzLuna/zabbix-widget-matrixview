@@ -106,18 +106,20 @@ foreach ($matrix['warnings'] as $warning) {
 
 $legend = (new CTag('ul', true))->addClass('matrix-view__legend');
 
-foreach ($matrix['legend'] as $legend_item) {
-	$legend_icon = (new CSpan())->addClass('matrix-view__legend-symbol matrix-view__cell--'.$legend_item['state'])
-		->setAttribute('aria-hidden', 'true');
-	$legend->addItem(
-		(new CTag('li', true, [
-			$legend_icon,
-			(new CSpan($legend_item['label']))->addClass('matrix-view__legend-label')
-		]))->addClass('matrix-view__legend-item')
-	);
-}
+if ((int) ($fields['show_legend'] ?? 1) === 1) {
+	foreach ($matrix['legend'] as $legend_item) {
+		$legend_icon = (new CSpan())->addClass('matrix-view__legend-symbol matrix-view__cell--'.$legend_item['state'])
+			->setAttribute('aria-hidden', 'true');
+		$legend->addItem(
+			(new CTag('li', true, [
+				$legend_icon,
+				(new CSpan($legend_item['label']))->addClass('matrix-view__legend-label')
+			]))->addClass('matrix-view__legend-item')
+		);
+	}
 
-$wrapper->addItem($legend);
+	$wrapper->addItem($legend);
+}
 
 if (!$matrix['columns'] || !$matrix['rows']) {
 	$wrapper->addItem((new CDiv($matrix['empty_state']))->addClass('matrix-view__empty'));

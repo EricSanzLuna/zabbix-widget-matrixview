@@ -54,6 +54,10 @@ class WidgetForm extends CWidgetForm {
 				]))->setDefault(Widget::HEADER_DIAGONAL)
 			)
 			->addField(
+				(new CWidgetFieldCheckBox('show_legend', _('Show indicator legend')))
+					->setDefault(1)
+			)
+			->addField(
 				(new CWidgetFieldMultiSelectItem('itemids', _('Columns')))
 					->setFlags(CWidgetField::FLAG_NOT_EMPTY | CWidgetField::FLAG_LABEL_ASTERISK)
 			)
