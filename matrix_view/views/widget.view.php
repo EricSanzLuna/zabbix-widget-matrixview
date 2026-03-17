@@ -64,17 +64,13 @@ else {
 
 		foreach ($matrix['columns'] as $column) {
 			$cell = $row['cells'][$column['id']];
-			$cell_content = (new CSpan($cell['label']))->addClass('matrix-view__cell-label');
-			$target = $cell['link'] !== null
-				? (new CLink($cell_content, $cell['link']))
-				: (new CSpan($cell_content));
-
-			$target
-				->addClass('matrix-view__cell-action')
-				->setAttribute('title', $cell['tooltip']);
 
 			$table_row->addItem(
-				(new CTag('td', true, $target))
+				(new CTag('td', true,
+					(new CSpan($cell['label']))
+						->addClass('matrix-view__cell-action')
+						->setAttribute('title', $cell['tooltip'])
+				))
 					->addClass('matrix-view__cell matrix-view__cell--'.$cell['state'])
 			);
 		}

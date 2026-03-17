@@ -5,12 +5,13 @@ namespace Modules\MatrixView\Includes;
 use Modules\MatrixView\Widget;
 use Zabbix\Widgets\CWidgetField;
 use Zabbix\Widgets\CWidgetForm;
+use Zabbix\Widgets\Fields\CWidgetFieldCheckBox;
 use Zabbix\Widgets\Fields\CWidgetFieldIntegerBox;
 use Zabbix\Widgets\Fields\CWidgetFieldMultiSelectGroup;
 use Zabbix\Widgets\Fields\CWidgetFieldMultiSelectHost;
+use Zabbix\Widgets\Fields\CWidgetFieldMultiSelectItem;
+use Zabbix\Widgets\Fields\CWidgetFieldNumericBox;
 use Zabbix\Widgets\Fields\CWidgetFieldSelect;
-use Zabbix\Widgets\Fields\CWidgetFieldSeverities;
-use Zabbix\Widgets\Fields\CWidgetFieldTextArea;
 use Zabbix\Widgets\Fields\CWidgetFieldTextBox;
 
 class WidgetForm extends CWidgetForm {
@@ -18,18 +19,14 @@ class WidgetForm extends CWidgetForm {
 	public function addFields(): self {
 		return $this
 			->addField(
-				(new CWidgetFieldSelect('source_mode', _('Source mode'), [
-					Widget::SOURCE_PROBLEMS => _('Problems'),
-					Widget::SOURCE_LATEST_DATA => _('Latest data')
-				]))
-					->setDefault(Widget::SOURCE_PROBLEMS)
-					->setFlags(CWidgetField::FLAG_NOT_EMPTY | CWidgetField::FLAG_LABEL_ASTERISK)
-			)
-			->addField(
 				new CWidgetFieldMultiSelectGroup('groupids', _('Host groups'))
 			)
 			->addField(
 				new CWidgetFieldMultiSelectHost('hostids', _('Hosts'))
+			)
+			->addField(
+				(new CWidgetFieldCheckBox('show_maintenance', _('Show hosts in maintenance')))
+					->setDefault(1)
 			)
 			->addField(
 				(new CWidgetFieldSelect('host_order', _('Host order'), [
@@ -38,13 +35,8 @@ class WidgetForm extends CWidgetForm {
 				]))->setDefault(Widget::ORDER_NAME_ASC)
 			)
 			->addField(
-				(new CWidgetFieldIntegerBox('limit_hosts', _('Max hosts')))
+				(new CWidgetFieldIntegerBox('limit_hosts', _('Host limit')))
 					->setDefault(25)
-					->setFlags(CWidgetField::FLAG_NOT_EMPTY | CWidgetField::FLAG_LABEL_ASTERISK)
-			)
-			->addField(
-				(new CWidgetFieldIntegerBox('limit_columns', _('Max columns')))
-					->setDefault(20)
 					->setFlags(CWidgetField::FLAG_NOT_EMPTY | CWidgetField::FLAG_LABEL_ASTERISK)
 			)
 			->addField(
@@ -54,50 +46,38 @@ class WidgetForm extends CWidgetForm {
 				]))->setDefault(Widget::VISUAL_COMPACT)
 			)
 			->addField(
-				(new CWidgetFieldTextBox('tag_key', _('Matrix tag key')))
-					->setDefault('matrix')
+				(new CWidgetFieldMultiSelectItem('itemids', _('Columns')))
+					->setFlags(CWidgetField::FLAG_NOT_EMPTY | CWidgetField::FLAG_LABEL_ASTERISK)
 			)
 			->addField(
-				new CWidgetFieldSeverities('problem_severities', _('Severities'))
+				(new CWidgetFieldSelect('threshold_direction', _('Numeric thresholds'), [
+					Widget::THRESHOLD_ASCENDING => _('Higher values are worse'),
+					Widget::THRESHOLD_DESCENDING => _('Lower values are worse')
+				]))->setDefault(Widget::THRESHOLD_ASCENDING)
 			)
 			->addField(
-				(new CWidgetFieldSelect('problem_ack_filter', _('Acknowledged'), [
-					Widget::FILTER_ALL => _('All'),
-					Widget::FILTER_NO => _('Unacknowledged only'),
-					Widget::FILTER_YES => _('Acknowledged only')
-				]))->setDefault(Widget::FILTER_ALL)
+				(new CWidgetFieldNumericBox('warning_threshold', _('Warning threshold')))
+					->setDefault('70')
 			)
 			->addField(
-				(new CWidgetFieldSelect('problem_suppressed_filter', _('Suppressed problems'), [
-					Widget::FILTER_ALL => _('All'),
-					Widget::FILTER_NO => _('Hide suppressed'),
-					Widget::FILTER_YES => _('Only suppressed')
-				]))->setDefault(Widget::FILTER_ALL)
+				(new CWidgetFieldNumericBox('high_threshold', _('High threshold')))
+					->setDefault('85')
 			)
 			->addField(
-				(new CWidgetFieldSelect('problem_maintenance_filter', _('Hosts in maintenance'), [
-					Widget::FILTER_ALL => _('All'),
-					Widget::FILTER_NO => _('Hide maintenance'),
-					Widget::FILTER_YES => _('Only maintenance')
-				]))->setDefault(Widget::FILTER_ALL)
+				(new CWidgetFieldNumericBox('critical_threshold', _('Critical threshold')))
+					->setDefault('95')
 			)
 			->addField(
-				new CWidgetFieldTextBox('column_order', _('Problem columns order'))
+				(new CWidgetFieldTextBox('ok_text', _('OK text patterns')))
+					->setDefault('running,up,ok,healthy,1')
 			)
 			->addField(
-				(new CWidgetFieldSelect('show_problem_count', _('Problem cell label'), [
-					0 => _('Severity only'),
-					1 => _('Severity + count')
-				]))->setDefault(1)
+				(new CWidgetFieldTextBox('warning_text', _('Warning text patterns')))
+					->setDefault('warning,degraded')
 			)
 			->addField(
-				new CWidgetFieldTextArea('latest_columns', _('Latest data columns'))
-			)
-			->addField(
-				(new CWidgetFieldSelect('latest_default_direction', _('Latest data threshold direction'), [
-					Widget::LATEST_ASCENDING => _('Higher values are worse'),
-					Widget::LATEST_DESCENDING => _('Lower values are worse')
-				]))->setDefault(Widget::LATEST_ASCENDING)
+				(new CWidgetFieldTextBox('critical_text', _('Critical text patterns')))
+					->setDefault('stopped,down,critical,failed,fail,error,0')
 			)
 			->addField(
 				(new CWidgetFieldTextBox('missing_label', _('Missing item label')))

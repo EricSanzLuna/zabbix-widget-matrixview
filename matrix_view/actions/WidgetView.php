@@ -9,18 +9,15 @@ use Modules\MatrixView\Widget;
 
 class WidgetView extends CControllerDashboardWidgetView {
 
-	private const PROBLEM_TAG_OPERATOR_EQUALS = 0;
-
 	protected function doAction(): void {
 		$fields = $this->getNormalizedFields();
 		$hosts = $this->getHosts($fields);
+		$reference_items = $this->getReferenceItems($fields);
 
 		$data = [
 			'name' => $this->getInput('name', $this->widget->getName()),
 			'fields_values' => $fields,
-			'matrix' => $fields['source_mode'] == Widget::SOURCE_PROBLEMS
-				? $this->buildProblemsMatrix($hosts, $fields)
-				: $this->buildLatestDataMatrix($hosts, $fields),
+			'matrix' => $this->buildMatrix($hosts, $reference_items, $fields),
 			'user' => [
 				'debug_mode' => $this->getDebugMode()
 			]
@@ -31,22 +28,20 @@ class WidgetView extends CControllerDashboardWidgetView {
 
 	private function getNormalizedFields(): array {
 		$defaults = [
-			'source_mode' => Widget::SOURCE_PROBLEMS,
 			'groupids' => [],
 			'hostids' => [],
+			'show_maintenance' => 1,
 			'host_order' => Widget::ORDER_NAME_ASC,
 			'limit_hosts' => 25,
-			'limit_columns' => 20,
 			'visual_mode' => Widget::VISUAL_COMPACT,
-			'tag_key' => 'matrix',
-			'problem_severities' => [],
-			'problem_ack_filter' => Widget::FILTER_ALL,
-			'problem_suppressed_filter' => Widget::FILTER_ALL,
-			'problem_maintenance_filter' => Widget::FILTER_ALL,
-			'column_order' => '',
-			'show_problem_count' => 1,
-			'latest_columns' => '',
-			'latest_default_direction' => Widget::LATEST_ASCENDING,
+			'itemids' => [],
+			'threshold_direction' => Widget::THRESHOLD_ASCENDING,
+			'warning_threshold' => '70',
+			'high_threshold' => '85',
+			'critical_threshold' => '95',
+			'ok_text' => 'running,up,ok,healthy,1',
+			'warning_text' => 'warning,degraded',
+			'critical_text' => 'stopped,down,critical,failed,fail,error,0',
 			'missing_label' => _('No item')
 		];
 
@@ -55,7 +50,7 @@ class WidgetView extends CControllerDashboardWidgetView {
 
 	private function getHosts(array $fields): array {
 		$options = [
-			'output' => ['hostid', 'name', 'host', 'maintenance_status', 'status'],
+			'output' => ['hostid', 'name', 'host', 'maintenance_status'],
 			'monitored_hosts' => true,
 			'preservekeys' => true,
 			'sortfield' => 'name',
@@ -79,277 +74,115 @@ class WidgetView extends CControllerDashboardWidgetView {
 		$hosts = [];
 
 		foreach ($db_hosts as $db_host) {
-			$maintenance_on = (int) $db_host['maintenance_status'] === HOST_MAINTENANCE_STATUS_ON;
+			$maintenance = (int) $db_host['maintenance_status'] === HOST_MAINTENANCE_STATUS_ON;
 
-			if ($fields['problem_maintenance_filter'] == Widget::FILTER_NO && $maintenance_on) {
-				continue;
-			}
-
-			if ($fields['problem_maintenance_filter'] == Widget::FILTER_YES && !$maintenance_on) {
+			if (!$fields['show_maintenance'] && $maintenance) {
 				continue;
 			}
 
 			$hosts[$db_host['hostid']] = [
 				'hostid' => (string) $db_host['hostid'],
-				'name' => $db_host['name'] !== '' ? $db_host['name'] : $db_host['host'],
-				'maintenance' => $maintenance_on
+				'label' => $db_host['name'] !== '' ? $db_host['name'] : $db_host['host'],
+				'maintenance' => $maintenance
 			];
 		}
 
 		return array_slice($hosts, 0, max(1, (int) $fields['limit_hosts']), true);
 	}
 
-	private function buildProblemsMatrix(array $hosts, array $fields): array {
-		$matrix = [
-			'mode' => Widget::SOURCE_PROBLEMS,
-			'rows' => [],
-			'columns' => [],
-			'legend' => $this->getLegend(Widget::SOURCE_PROBLEMS),
-			'states' => $this->getStateLabels(),
-			'warnings' => [],
-			'empty_state' => _('No active problems matched the selected hosts and filters.')
-		];
-
-		if (!$hosts) {
-			$matrix['empty_state'] = _('No visible hosts match the widget filters.');
-
-			return $matrix;
-		}
-
-		$options = [
-			'output' => ['eventid', 'objectid', 'name', 'severity', 'acknowledged', 'clock', 'suppressed'],
-			'hostids' => array_keys($hosts),
-			'selectTags' => ['tag', 'value'],
-			'preservekeys' => false,
-			'sortfield' => ['severity', 'clock'],
-			'sortorder' => [ZBX_SORT_DOWN, ZBX_SORT_DOWN]
-		];
-
-		if ($fields['problem_severities']) {
-			$options['severities'] = $fields['problem_severities'];
-		}
-
-		if ($fields['problem_ack_filter'] != Widget::FILTER_ALL) {
-			$options['acknowledged'] = $fields['problem_ack_filter'] == Widget::FILTER_YES;
-		}
-
-		if ($fields['problem_suppressed_filter'] != Widget::FILTER_ALL) {
-			$options['suppressed'] = $fields['problem_suppressed_filter'] == Widget::FILTER_YES;
-		}
-
-		$db_problems = API::Problem()->get($options);
-		$trigger_hosts = $this->getProblemTriggerHosts($db_problems);
-		$columns = [];
-		$rows = [];
-
-		foreach ($hosts as $hostid => $host) {
-			$rows[$hostid] = [
-				'hostid' => $hostid,
-				'label' => $host['name'],
-				'maintenance' => $host['maintenance'],
-				'cells' => []
-			];
-		}
-
-		foreach ($db_problems as $problem) {
-			$column_value = $this->extractProblemColumn($problem, $fields['tag_key']);
-			$problem_hostids = $trigger_hosts[$problem['objectid']] ?? [];
-
-			if ($column_value === null || !$problem_hostids) {
-				continue;
-			}
-
-			foreach ($problem_hostids as $hostid) {
-				if (!array_key_exists($hostid, $rows)) {
-					continue;
-				}
-
-				if (!array_key_exists($column_value, $columns)) {
-					$columns[$column_value] = [
-						'id' => $column_value,
-						'label' => $column_value
-					];
-				}
-
-				if (!isset($rows[$hostid]['cells'][$column_value])) {
-					$rows[$hostid]['cells'][$column_value] = $this->createEmptyProblemCell($hostid, $column_value);
-				}
-
-				$rows[$hostid]['cells'][$column_value]['count']++;
-				$rows[$hostid]['cells'][$column_value]['severity'] = max(
-					$rows[$hostid]['cells'][$column_value]['severity'],
-					(int) $problem['severity']
-				);
-				$rows[$hostid]['cells'][$column_value]['clock'] = max(
-					$rows[$hostid]['cells'][$column_value]['clock'],
-					(int) $problem['clock']
-				);
-				$rows[$hostid]['cells'][$column_value]['problems'][] = [
-					'eventid' => (string) $problem['eventid'],
-					'name' => $problem['name'],
-					'severity' => (int) $problem['severity'],
-					'clock' => (int) $problem['clock'],
-					'acknowledged' => (int) $problem['acknowledged'],
-					'suppressed' => (int) $problem['suppressed']
-				];
-			}
-		}
-
-		$ordered_columns = $this->orderProblemColumns(array_values($columns), $fields);
-		$matrix['columns'] = array_slice($ordered_columns, 0, max(1, (int) $fields['limit_columns']));
-		$matrix['rows'] = $this->finalizeProblemRows(array_values($rows), $matrix['columns'], $fields);
-
-		if (!$matrix['columns']) {
-			$matrix['empty_state'] = _('No columns could be derived from the configured tag key.');
-		}
-
-		return $matrix;
-	}
-
-	private function getProblemTriggerHosts(array $problems): array {
-		$triggerids = [];
-
-		foreach ($problems as $problem) {
-			if (isset($problem['objectid']) && $problem['objectid'] !== '') {
-				$triggerids[] = $problem['objectid'];
-			}
-		}
-
-		if (!$triggerids) {
+	private function getReferenceItems(array $fields): array {
+		if (!$fields['itemids']) {
 			return [];
 		}
 
-		$db_triggers = API::Trigger()->get([
-			'output' => ['triggerid'],
-			'triggerids' => array_values(array_unique($triggerids)),
-			'selectHosts' => ['hostid'],
-			'preservekeys' => true
+		$db_items = API::Item()->get([
+			'output' => ['itemid', 'name', 'key_', 'units', 'value_type'],
+			'itemids' => $fields['itemids'],
+			'preservekeys' => false
 		]);
 
-		if (!$db_triggers) {
+		if (!$db_items) {
 			return [];
 		}
 
-		$trigger_hosts = [];
-
-		foreach ($db_triggers as $db_trigger) {
-			$trigger_hosts[$db_trigger['triggerid']] = [];
-
-			foreach ($db_trigger['hosts'] ?? [] as $db_host) {
-				$trigger_hosts[$db_trigger['triggerid']][] = (string) $db_host['hostid'];
-			}
-		}
-
-		return $trigger_hosts;
-	}
-
-	private function buildLatestDataMatrix(array $hosts, array $fields): array {
-		$matrix = [
-			'mode' => Widget::SOURCE_LATEST_DATA,
-			'rows' => [],
-			'columns' => [],
-			'legend' => $this->getLegend(Widget::SOURCE_LATEST_DATA),
-			'states' => $this->getStateLabels(),
-			'warnings' => [],
-			'empty_state' => _('No items matched the configured latest data columns.')
-		];
-
-		if (!$hosts) {
-			$matrix['empty_state'] = _('No visible hosts match the widget filters.');
-
-			return $matrix;
-		}
-
-		$columns = $this->parseLatestColumns($fields['latest_columns'], (int) $fields['latest_default_direction']);
-
-		if (!$columns) {
-			$matrix['warnings'][] = _('Latest data mode requires at least one column definition.');
-			$matrix['empty_state'] = _('Add one or more latest data columns using the format Label|pattern|direction|warn|high|critical.');
-
-			return $matrix;
-		}
-
-		$columns = array_slice($columns, 0, max(1, (int) $fields['limit_columns']));
-		$matrix['columns'] = $columns;
-		$items_by_column = $this->loadLatestItemsByColumn($hosts, $columns);
-
-		foreach ($hosts as $hostid => $host) {
-			$row = [
-				'hostid' => $hostid,
-				'label' => $host['name'],
-				'maintenance' => $host['maintenance'],
-				'cells' => []
-			];
-
-			foreach ($columns as $column) {
-				$item = $items_by_column[$column['id']][$hostid] ?? null;
-				$row['cells'][$column['id']] = $this->buildLatestCell($hostid, $column, $item, $fields['missing_label']);
-			}
-
-			$matrix['rows'][] = $row;
-		}
-
-		if (!$items_by_column) {
-			$matrix['warnings'][] = _('No items were returned by the API for the configured patterns.');
-		}
-
-		return $matrix;
-	}
-
-	private function parseLatestColumns(string $raw_columns, int $default_direction): array {
 		$columns = [];
-		$lines = preg_split('/\r\n|\r|\n/', trim($raw_columns));
 
-		if (!$lines) {
-			return [];
-		}
-
-		foreach ($lines as $index => $line) {
-			$line = trim($line);
-
-			if ($line === '') {
-				continue;
-			}
-
-			$parts = array_map('trim', explode('|', $line));
-			$label = $parts[0] ?? '';
-			$pattern = $parts[1] ?? $label;
-
-			if ($label === '' || $pattern === '') {
-				continue;
-			}
+		foreach ($db_items as $db_item) {
+			$column_id = (string) $db_item['itemid'];
 
 			$columns[] = [
-				'id' => 'col_'.$index,
-				'label' => $label,
-				'pattern' => $pattern,
-				'direction' => $this->parseDirection($parts[2] ?? '', $default_direction),
-				'warn' => $this->parseNullableNumber($parts[3] ?? null),
-				'high' => $this->parseNullableNumber($parts[4] ?? null),
-				'critical' => $this->parseNullableNumber($parts[5] ?? null)
+				'id' => $column_id,
+				'label' => $db_item['name'],
+				'key_' => $db_item['key_'],
+				'units' => $db_item['units'],
+				'value_type' => (int) $db_item['value_type']
 			];
 		}
 
 		return $columns;
 	}
 
-	private function loadLatestItemsByColumn(array $hosts, array $columns): array {
-		$result = [];
+	private function buildMatrix(array $hosts, array $columns, array $fields): array {
+		$matrix = [
+			'rows' => [],
+			'columns' => $columns,
+			'legend' => $this->getLegend(),
+			'warnings' => [],
+			'empty_state' => _('Select one or more items to build the matrix.'),
+			'thresholds' => [
+				'direction' => (int) $fields['threshold_direction'],
+				'warning' => $this->parseNullableNumber($fields['warning_threshold']),
+				'high' => $this->parseNullableNumber($fields['high_threshold']),
+				'critical' => $this->parseNullableNumber($fields['critical_threshold'])
+			]
+		];
+
+		if (!$columns) {
+			return $matrix;
+		}
+
+		if (!$hosts) {
+			$matrix['empty_state'] = _('No visible hosts match the widget filters.');
+
+			return $matrix;
+		}
+
+		$items_by_key = $this->loadItemsForHosts($hosts, $columns);
+
+		foreach ($hosts as $hostid => $host) {
+			$row = [
+				'hostid' => $hostid,
+				'label' => $host['label'],
+				'maintenance' => $host['maintenance'],
+				'cells' => []
+			];
+
+			foreach ($columns as $column) {
+				$item = $items_by_key[$column['key_']][$hostid] ?? null;
+				$row['cells'][$column['id']] = $this->buildCell($hostid, $column, $item, $fields);
+			}
+
+			$matrix['rows'][] = $row;
+		}
+
+		if (!$items_by_key) {
+			$matrix['warnings'][] = _('No matching items were found for the selected item keys on the filtered hosts.');
+			$matrix['empty_state'] = _('No matching items were found for the selected item keys on the filtered hosts.');
+		}
+
+		return $matrix;
+	}
+
+	private function loadItemsForHosts(array $hosts, array $columns): array {
+		$items_by_key = [];
 		$hostids = array_keys($hosts);
 
 		foreach ($columns as $column) {
 			$db_items = API::Item()->get([
-				'output' => ['itemid', 'hostid', 'name', 'key_', 'lastvalue', 'lastclock', 'value_type', 'units', 'state', 'status'],
+				'output' => ['itemid', 'hostid', 'name', 'key_', 'lastvalue', 'lastclock', 'units', 'value_type', 'state', 'status'],
 				'hostids' => $hostids,
+				'filter' => ['key_' => $column['key_']],
 				'monitored' => true,
-				'search' => [
-					'key_' => $column['pattern'],
-					'name' => $column['pattern']
-				],
-				'searchByAny' => true,
-				'searchWildcardsEnabled' => true,
-				'sortfield' => ['name'],
-				'sortorder' => ZBX_SORT_UP,
 				'preservekeys' => false
 			]);
 
@@ -358,334 +191,143 @@ class WidgetView extends CControllerDashboardWidgetView {
 			}
 
 			foreach ($db_items as $db_item) {
-				$hostid = (string) $db_item['hostid'];
-				$current = $result[$column['id']][$hostid] ?? null;
-
-				if ($current === null || $this->getItemMatchScore($db_item, $column['pattern']) > $this->getItemMatchScore($current, $column['pattern'])) {
-					$result[$column['id']][$hostid] = $db_item;
-				}
+				$items_by_key[$column['key_']][(string) $db_item['hostid']] = $db_item;
 			}
 		}
 
-		return $result;
+		return $items_by_key;
 	}
 
-	private function buildLatestCell(string $hostid, array $column, ?array $item, string $missing_label): array {
+	private function buildCell(string $hostid, array $column, ?array $item, array $fields): array {
 		if ($item === null) {
 			return [
-				'hostid' => $hostid,
-				'column_id' => $column['id'],
-				'label' => $missing_label,
-				'value' => null,
+				'label' => $fields['missing_label'],
 				'state' => 'missing',
-				'lastclock' => null,
-				'tooltip' => $missing_label,
-				'link' => null,
-				'detail' => [
-					'type' => 'latest_data',
-					'hostid' => $hostid,
-					'column' => $column['label'],
-					'pattern' => $column['pattern']
-				]
+				'tooltip' => sprintf('%s: %s', $column['label'], $fields['missing_label'])
 			];
 		}
 
-		$raw_value = $item['lastvalue'] !== '' ? $item['lastvalue'] : null;
-		$state = $this->evaluateLatestState($raw_value, $column);
-		$label = $raw_value !== null ? $raw_value : $missing_label;
-		$tooltip = sprintf('%s: %s', $item['name'], $label);
+		$value = $item['lastvalue'] !== '' ? $item['lastvalue'] : null;
+		$label = $this->formatValue($value, $column['units']);
+		$state = $this->evaluateState($value, $fields);
+		$tooltip = $item['name'];
+
+		if ($value !== null) {
+			$tooltip .= "\n".sprintf('%s: %s', _('Last value'), $label);
+		}
 
 		if ((int) $item['lastclock'] > 0) {
 			$tooltip .= "\n".sprintf('%s: %s', _('Updated'), zbx_date2str(DATE_TIME_FORMAT_SECONDS, (int) $item['lastclock']));
 		}
 
 		return [
-			'hostid' => $hostid,
-			'column_id' => $column['id'],
 			'label' => $label,
-			'value' => $raw_value,
 			'state' => $state,
-			'lastclock' => (int) $item['lastclock'],
-			'tooltip' => $tooltip,
-			'link' => null,
-			'detail' => [
-				'type' => 'latest_data',
-				'hostid' => $hostid,
-				'itemid' => (string) $item['itemid'],
-				'column' => $column['label'],
-				'pattern' => $column['pattern']
-			]
+			'tooltip' => $tooltip
 		];
 	}
 
-	private function createEmptyProblemCell(string $hostid, string $column_value): array {
-		return [
-			'hostid' => $hostid,
-			'column_id' => $column_value,
-			'label' => '',
-			'count' => 0,
-			'severity' => -1,
-			'clock' => 0,
-			'state' => 'ok',
-			'tooltip' => _('No active problems'),
-			'link' => null,
-			'problems' => [],
-			'detail' => [
-				'type' => 'problems',
-				'hostid' => $hostid,
-				'tag_value' => $column_value
-			]
-		];
+	private function evaluateState(?string $value, array $fields): string {
+		if ($value === null || $value === '') {
+			return 'missing';
+		}
+
+		if (is_numeric($value)) {
+			return $this->evaluateNumericState((float) $value, $fields);
+		}
+
+		return $this->evaluateTextState($value, $fields);
 	}
 
-	private function finalizeProblemRows(array $rows, array $columns, array $fields): array {
-		$column_ids = array_column($columns, 'id');
+	private function evaluateNumericState(float $value, array $fields): string {
+		$warning = $this->parseNullableNumber($fields['warning_threshold']);
+		$high = $this->parseNullableNumber($fields['high_threshold']);
+		$critical = $this->parseNullableNumber($fields['critical_threshold']);
+		$descending = (int) $fields['threshold_direction'] === Widget::THRESHOLD_DESCENDING;
 
-		foreach ($rows as &$row) {
-			$cells = [];
-
-			foreach ($column_ids as $column_id) {
-				$cell = $row['cells'][$column_id] ?? $this->createEmptyProblemCell($row['hostid'], $column_id);
-
-				if ($cell['count'] > 0) {
-					$cell['state'] = $this->getSeverityState($cell['severity']);
-					$cell['label'] = $fields['show_problem_count']
-						? sprintf('%s (%d)', $this->getSeverityShortLabel($cell['severity']), $cell['count'])
-						: $this->getSeverityShortLabel($cell['severity']);
-					$cell['tooltip'] = $this->buildProblemTooltip($cell);
-					$cell['link'] = $this->buildProblemsUrl($row['hostid'], $fields['tag_key'], $column_id);
-				}
-				else {
-					$cell['label'] = _('OK');
-				}
-
-				$cells[$column_id] = $cell;
+		if ($descending) {
+			if ($critical !== null && $value <= $critical) {
+				return 'disaster';
 			}
 
-			$row['cells'] = $cells;
-		}
-		unset($row);
+			if ($high !== null && $value <= $high) {
+				return 'high';
+			}
 
-		return $rows;
+			if ($warning !== null && $value <= $warning) {
+				return 'warning';
+			}
+
+			return 'ok';
+		}
+
+		if ($critical !== null && $value >= $critical) {
+			return 'disaster';
+		}
+
+		if ($high !== null && $value >= $high) {
+			return 'high';
+		}
+
+		if ($warning !== null && $value >= $warning) {
+			return 'warning';
+		}
+
+		return 'ok';
 	}
 
-	private function buildProblemTooltip(array $cell): string {
-		$tooltip = sprintf('%s: %d', _('Active problems'), $cell['count']);
+	private function evaluateTextState(string $value, array $fields): string {
+		$normalized = mb_strtolower(trim($value));
 
-		if ($cell['clock'] > 0) {
-			$tooltip .= "\n".sprintf('%s: %s', _('Last event'), zbx_date2str(DATE_TIME_FORMAT_SECONDS, $cell['clock']));
+		if ($this->matchesAnyPattern($normalized, $fields['critical_text'])) {
+			return 'disaster';
 		}
 
-		foreach (array_slice($cell['problems'], 0, 5) as $problem) {
-			$tooltip .= "\n".sprintf('[%s] %s', $this->getSeverityShortLabel($problem['severity']), $problem['name']);
+		if ($this->matchesAnyPattern($normalized, $fields['warning_text'])) {
+			return 'warning';
 		}
 
-		return $tooltip;
+		if ($this->matchesAnyPattern($normalized, $fields['ok_text'])) {
+			return 'ok';
+		}
+
+		return 'info';
 	}
 
-	private function extractProblemColumn(array $problem, string $tag_key): ?string {
-		if (!isset($problem['tags'])) {
+	private function matchesAnyPattern(string $value, string $patterns): bool {
+		foreach (array_filter(array_map('trim', explode(',', mb_strtolower($patterns)))) as $pattern) {
+			if ($pattern !== '' && mb_strpos($value, $pattern) !== false) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	private function formatValue(?string $value, string $units): string {
+		if ($value === null || $value === '') {
+			return _('No data');
+		}
+
+		return $units !== '' ? $value.' '.$units : $value;
+	}
+
+	private function parseNullableNumber($value): ?float {
+		if ($value === null || $value === '') {
 			return null;
 		}
 
-		foreach ($problem['tags'] as $tag) {
-			if ($tag['tag'] === $tag_key && $tag['value'] !== '') {
-				return $tag['value'];
-			}
-		}
-
-		return null;
+		return is_numeric($value) ? (float) $value : null;
 	}
 
-	private function orderProblemColumns(array $columns, array $fields): array {
-		$preferred = array_filter(array_map('trim', explode(',', $fields['column_order'])));
-
-		if ($preferred) {
-			$order_map = array_flip($preferred);
-
-			usort($columns, static function(array $left, array $right) use ($order_map): int {
-				$left_pos = $order_map[$left['label']] ?? PHP_INT_MAX;
-				$right_pos = $order_map[$right['label']] ?? PHP_INT_MAX;
-
-				if ($left_pos === $right_pos) {
-					return strcasecmp($left['label'], $right['label']);
-				}
-
-				return $left_pos <=> $right_pos;
-			});
-
-			return $columns;
-		}
-
-		usort($columns, static function(array $left, array $right): int {
-			return strcasecmp($left['label'], $right['label']);
-		});
-
-		return $columns;
-	}
-
-	private function buildProblemsUrl(string $hostid, string $tag_key, string $tag_value): string {
-		$query = http_build_query([
-			'action' => 'problem.view',
-			'filter_set' => 1,
-			'hostids' => [$hostid],
-			'tags' => [[
-				'tag' => $tag_key,
-				'operator' => self::PROBLEM_TAG_OPERATOR_EQUALS,
-				'value' => $tag_value
-			]]
-		]);
-
-		return 'zabbix.php?'.$query;
-	}
-
-	private function getLegend(int $mode): array {
-		if ($mode == Widget::SOURCE_PROBLEMS) {
-			return [
-				['state' => 'ok', 'label' => _('OK')],
-				['state' => 'info', 'label' => _('Information')],
-				['state' => 'warning', 'label' => _('Warning')],
-				['state' => 'average', 'label' => _('Average')],
-				['state' => 'high', 'label' => _('High')],
-				['state' => 'disaster', 'label' => _('Disaster')]
-			];
-		}
-
+	private function getLegend(): array {
 		return [
-			['state' => 'ok', 'label' => _('Normal')],
-			['state' => 'warning', 'label' => _('Warning threshold')],
-			['state' => 'high', 'label' => _('High threshold')],
-			['state' => 'disaster', 'label' => _('Critical threshold')],
+			['state' => 'ok', 'label' => _('OK')],
+			['state' => 'info', 'label' => _('Text / neutral')],
+			['state' => 'warning', 'label' => _('Warning')],
+			['state' => 'high', 'label' => _('High')],
+			['state' => 'disaster', 'label' => _('Critical')],
 			['state' => 'missing', 'label' => _('Missing item')]
 		];
-	}
-
-	private function getStateLabels(): array {
-		return [
-			'ok' => _('OK'),
-			'info' => _('Info'),
-			'warning' => _('Warning'),
-			'average' => _('Average'),
-			'high' => _('High'),
-			'disaster' => _('Disaster'),
-			'missing' => _('No item')
-		];
-	}
-
-	private function getSeverityState(int $severity): string {
-		switch ($severity) {
-			case TRIGGER_SEVERITY_NOT_CLASSIFIED:
-				return 'info';
-			case TRIGGER_SEVERITY_INFORMATION:
-				return 'info';
-			case TRIGGER_SEVERITY_WARNING:
-				return 'warning';
-			case TRIGGER_SEVERITY_AVERAGE:
-				return 'average';
-			case TRIGGER_SEVERITY_HIGH:
-				return 'high';
-			case TRIGGER_SEVERITY_DISASTER:
-				return 'disaster';
-		}
-
-		return 'ok';
-	}
-
-	private function getSeverityShortLabel(int $severity): string {
-		switch ($severity) {
-			case TRIGGER_SEVERITY_NOT_CLASSIFIED:
-				return _('NC');
-			case TRIGGER_SEVERITY_INFORMATION:
-				return _('Info');
-			case TRIGGER_SEVERITY_WARNING:
-				return _('Warn');
-			case TRIGGER_SEVERITY_AVERAGE:
-				return _('Avg');
-			case TRIGGER_SEVERITY_HIGH:
-				return _('High');
-			case TRIGGER_SEVERITY_DISASTER:
-				return _('Dis');
-		}
-
-		return _('OK');
-	}
-
-	private function evaluateLatestState(?string $value, array $column): string {
-		if ($value === null || !is_numeric($value)) {
-			return 'ok';
-		}
-
-		$numeric_value = (float) $value;
-		$thresholds = [
-			'warning' => $column['warn'],
-			'high' => $column['high'],
-			'disaster' => $column['critical']
-		];
-
-		if ($column['direction'] == Widget::LATEST_DESCENDING) {
-			foreach (['disaster', 'high', 'warning'] as $state) {
-				if ($thresholds[$state] !== null && $numeric_value <= $thresholds[$state]) {
-					return $state;
-				}
-			}
-
-			return 'ok';
-		}
-
-		foreach (['disaster', 'high', 'warning'] as $state) {
-			if ($thresholds[$state] !== null && $numeric_value >= $thresholds[$state]) {
-				return $state;
-			}
-		}
-
-		return 'ok';
-	}
-
-	private function parseDirection(string $value, int $default_direction): int {
-		$value = strtolower(trim($value));
-
-		if (in_array($value, ['desc', 'down', 'descending', 'lower'], true)) {
-			return Widget::LATEST_DESCENDING;
-		}
-
-		if (in_array($value, ['asc', 'up', 'ascending', 'higher'], true)) {
-			return Widget::LATEST_ASCENDING;
-		}
-
-		return $default_direction;
-	}
-
-	private function parseNullableNumber(?string $value): ?float {
-		if ($value === null) {
-			return null;
-		}
-
-		$value = trim($value);
-
-		if ($value === '' || !is_numeric($value)) {
-			return null;
-		}
-
-		return (float) $value;
-	}
-
-	private function getItemMatchScore(array $item, string $pattern): int {
-		$pattern = mb_strtolower($pattern);
-		$name = mb_strtolower($item['name']);
-		$key = mb_strtolower($item['key_']);
-
-		if ($key === $pattern || $name === $pattern) {
-			return 300;
-		}
-
-		if (strpos($key, $pattern) !== false) {
-			return 200;
-		}
-
-		if (strpos($name, $pattern) !== false) {
-			return 100;
-		}
-
-		return 0;
 	}
 }

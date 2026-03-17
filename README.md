@@ -1,16 +1,15 @@
 # Matrix View for Zabbix 7.0
 
-`Matrix View` es un widget de dashboard para Zabbix 7.0 que muestra una matriz de `hosts x columnas`.
-Puede trabajar en dos modos:
+`Matrix View` is a dashboard widget for Zabbix 7.0 that renders a matrix of:
 
-- `Problems`: las columnas salen de un tag de problema/trigger, por ejemplo `matrix:IIS`.
-- `Latest data`: las columnas se definen manualmente y cada celda muestra el valor más reciente de un item.
+- rows = filtered hosts
+- columns = selected reference items
 
-## Instalación
+The widget is designed for service/status dashboards where you want to compare the same logical item across many hosts, similar to a simplified matrix-style version of `Top hosts`.
 
-La carpeta que debes copiar al frontend de Zabbix es `matrix_view`, no la raíz completa del repositorio.
+## Installation
 
-La estructura correcta en el servidor debe quedar así:
+Copy only the `matrix_view` folder into Zabbix frontend modules:
 
 ```text
 ui/modules/matrix_view/
@@ -22,128 +21,156 @@ ui/modules/matrix_view/
   assets/
 ```
 
-Después:
+Then:
 
-1. Ve a `Administration -> General -> Modules`.
-2. Pulsa `Scan directory`.
-3. Habilita `Matrix View`.
-4. Abre un dashboard en modo edición y agrega el widget.
+1. Open `Administration -> General -> Modules`
+2. Click `Scan directory`
+3. Enable `Matrix View`
+4. Add the widget to a dashboard
 
-## Configuración rápida
+## Configuration
 
-### Parámetros comunes
+### Host filters
 
-- `Host groups`: grupos de hosts incluidos.
-- `Hosts`: hosts específicos adicionales o filtro manual.
-- `Host order`: orden alfabético ascendente o descendente.
-- `Max hosts`: límite de filas renderizadas.
-- `Max columns`: límite de columnas renderizadas.
-- `Density`: `Compact` o `Comfortable`.
+- `Host groups`: limits the matrix to hosts in the selected groups
+- `Hosts`: optional explicit host filter
+- `Show hosts in maintenance`: includes hosts currently in maintenance
+- `Host order`: ascending or descending by name
+- `Host limit`: maximum number of rows rendered
+- `Density`: compact or comfortable cell spacing
 
-## Modo Problems
+### Columns
 
-Este modo funciona parecido a una vista operativa basada en problemas activos.
+The widget uses explicit Zabbix items as reference columns.
 
-- `Matrix tag key`: nombre del tag usado para generar columnas. Valor sugerido: `matrix`.
-- `Severities`: severidades que deben entrar a la matriz.
-- `Acknowledged`: filtra por problemas reconocidos o no reconocidos.
-- `Suppressed problems`: incluye u oculta problemas suprimidos.
-- `Hosts in maintenance`: controla si se incluyen hosts en mantenimiento.
-- `Problem columns order`: lista separada por comas para priorizar columnas.
-  Ejemplo: `IIS,SQL,Exchange`
-- `Problem cell label`: muestra sólo severidad o severidad + contador.
+In the `Columns` field:
 
-### Ejemplo de tags
+1. select one or more items
+2. each selected item becomes one matrix column
+3. the widget uses the selected item's exact `key_`
+4. for every visible host, it searches for an item with the same `key_`
 
-Si tus triggers tienen tags como:
+This means the best results come when all target hosts expose the same item keys.
+
+Example:
+
+- select `CPU utilization` from one host
+- if other hosts also have the same `key_`, they will fill that column
+
+## Colors and state evaluation
+
+The widget supports both numeric and text item values.
+
+### Numeric values
+
+Numeric values use global thresholds:
+
+- `Warning threshold`
+- `High threshold`
+- `Critical threshold`
+
+And one direction:
+
+- `Higher values are worse`
+- `Lower values are worse`
+
+Example for CPU:
+
+- Warning: `70`
+- High: `85`
+- Critical: `95`
+
+### Text values
+
+Text values use pattern matching:
+
+- `OK text patterns`
+- `Warning text patterns`
+- `Critical text patterns`
+
+Patterns are comma-separated and matched case-insensitively.
+
+Example for Windows/Linux services:
 
 ```text
-matrix:IIS
-matrix:SQL
-matrix:Exchange
+OK text patterns: running,up,ok,healthy,1
+Warning text patterns: warning,degraded
+Critical text patterns: stopped,down,critical,failed,fail,error,0
 ```
 
-Entonces el widget generará tres columnas: `IIS`, `SQL` y `Exchange`.
+If no pattern matches:
 
-Al hacer clic en una celda, el widget abre `Monitoring -> Problems` filtrado por host y tag.
+- the cell is shown as neutral/info
 
-## Modo Latest data
+If the item does not exist on a host:
 
-Este modo es útil cuando quieres una matriz parecida a `Top hosts`, pero enfocada en valores puntuales por host.
+- the cell uses `Missing item label`
 
-- `Latest data columns`: una columna por línea con el formato:
+## How the matrix is built
 
-```text
-Label|pattern|direction|warn|high|critical
-```
+For each selected host:
 
-Donde:
+1. the widget iterates through the selected reference items
+2. it takes the `key_` of each selected item
+3. it looks for an item with the same `key_` on the current host
+4. it renders the latest value
+5. it colors the cell using thresholds or text patterns
 
-- `Label`: nombre visible de la columna.
-- `pattern`: patrón para buscar por `key_` o por nombre del item.
-- `direction`: `asc` si valores altos son peores, `desc` si valores bajos son peores.
-- `warn`, `high`, `critical`: umbrales numéricos.
+## Recommended usage
 
-### Ejemplos
+This design works especially well when:
 
-```text
-IIS|service.info[W3SVC,state]|desc|6|3|1
-CPU|system.cpu.util|asc|70|85|95
-Login|web.test.fail[Login]|asc|1|2|3
-```
+- all hosts share the same item keys
+- you want a host x service/status matrix
+- you want something visually closer to a service board than a time-series widget
 
-- `Latest data threshold direction`: dirección por defecto para columnas que no definan `asc` o `desc`.
-- `Missing item label`: texto mostrado cuando el host no tiene item coincidente.
+Good examples:
 
-## Comportamiento visual
+- service states
+- CPU / memory / disk indicators
+- queue depth / process counts
+- application health flags
 
-- Encabezado superior fijo.
-- Primera columna fija con el nombre del host.
-- Scroll horizontal y vertical para matrices grandes.
-- Leyenda de colores.
-- Tooltips por celda.
-- Estados vacíos cuando no hay datos o no hay coincidencias.
+## Troubleshooting
 
-## Solución de problemas
+### Module does not appear in Scan directory
 
-### El módulo no aparece en `Scan directory`
-
-Revisa que `manifest.json` esté en:
+Make sure the module is installed as:
 
 ```text
 ui/modules/matrix_view/manifest.json
 ```
 
-No debe quedar así:
+Not:
 
 ```text
 ui/modules/zabbix-widget-matrixview/matrix_view/manifest.json
 ```
 
-### El widget muestra `No columns could be derived from the configured tag key`
+### The widget shows `No matching items were found`
 
-Significa que Zabbix no encontró problemas activos con el tag configurado en `Matrix tag key`.
-Verifica:
+Check:
 
-- que existan problemas activos
-- que los triggers/problemas tengan ese tag
-- que el usuario tenga permisos para verlos
-- que las severidades/filtros no estén excluyendo todo
+- selected hosts really have those item keys
+- the selected reference items use keys shared by the other hosts
+- the user has permissions to read those hosts/items
+- the hosts are monitored and exposing recent values
 
-### El modo Latest data no muestra valores
+### Cells show `No item`
 
-Verifica:
+That host does not have an item with the same `key_` as the selected reference column.
 
-- que el host tenga items cuyo `key_` o nombre coincidan con el patrón
-- que haya último valor disponible
-- que el patrón esté escrito igual o use una parte distintiva del item
+### Colors do not match expected service states
 
-## Estado actual
+Adjust:
 
-Versión inicial funcional para Zabbix 7.0:
+- numeric thresholds
+- text patterns for OK / Warning / Critical
 
-- matriz por problemas con columnas por tag
-- matriz por latest data con columnas manuales
-- filtros operativos básicos
-- navegación a Problems
-- base lista para un futuro widget de detalle
+## Current limitations
+
+- no tag-based `Problems` mode
+- no per-column custom thresholds yet
+- no detail modal yet
+
+The current version intentionally focuses on a more reliable item-based matrix with a simpler configuration model.

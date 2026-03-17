@@ -1,23 +1,21 @@
 div.dashboard-widget-matrix_view .matrix-view,
-form.dashboard-widget-matrix_view .matrix-view {
-	--matrix-ok-bg: #d5f5d1;
-	--matrix-ok-fg: #194d1f;
-	--matrix-info-bg: #d6efff;
-	--matrix-info-fg: #124566;
-	--matrix-warning-bg: #fff2c6;
-	--matrix-warning-fg: #5c4300;
-	--matrix-average-bg: #ffdcb3;
-	--matrix-average-fg: #6c3900;
-	--matrix-high-bg: #ffc0aa;
-	--matrix-high-fg: #7b1d1d;
-	--matrix-disaster-bg: #ff9c9c;
-	--matrix-disaster-fg: #5f1010;
-	--matrix-missing-bg: #eceff3;
-	--matrix-missing-fg: #4f5965;
-	--matrix-border: rgba(120, 136, 154, 0.35);
-	--matrix-surface: rgba(255, 255, 255, 0.96);
-	--matrix-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
-	color: inherit;
+form.dashboard-widget-matrix_view {
+	--matrix-surface: #1f232a;
+	--matrix-surface-soft: #262b33;
+	--matrix-border: rgba(255, 255, 255, 0.08);
+	--matrix-text: rgba(255, 255, 255, 0.92);
+	--matrix-ok-bg: rgba(47, 133, 74, 0.88);
+	--matrix-ok-fg: #eaf8ed;
+	--matrix-info-bg: rgba(59, 85, 110, 0.92);
+	--matrix-info-fg: #e7f1fb;
+	--matrix-warning-bg: rgba(181, 131, 28, 0.92);
+	--matrix-warning-fg: #fff4d8;
+	--matrix-high-bg: rgba(176, 94, 30, 0.94);
+	--matrix-high-fg: #fff0df;
+	--matrix-disaster-bg: rgba(165, 52, 52, 0.96);
+	--matrix-disaster-fg: #ffe9e9;
+	--matrix-missing-bg: rgba(80, 87, 97, 0.9);
+	--matrix-missing-fg: #e7eaef;
 }
 
 div.dashboard-widget-matrix_view .matrix-view {
@@ -25,26 +23,17 @@ div.dashboard-widget-matrix_view .matrix-view {
 	flex-direction: column;
 	gap: 12px;
 	height: 100%;
+	color: var(--matrix-text);
 }
 
 div.dashboard-widget-matrix_view .matrix-view__warning,
-div.dashboard-widget-matrix_view .matrix-view__empty {
-	padding: 10px 12px;
-	border: 1px dashed var(--matrix-border);
-	border-radius: 10px;
-	background: rgba(246, 248, 251, 0.9);
-}
-
+div.dashboard-widget-matrix_view .matrix-view__empty,
 form.dashboard-widget-matrix_view .matrix-view__help {
 	padding: 10px 12px;
-	border: 1px solid rgba(120, 136, 154, 0.35);
+	border: 1px solid var(--matrix-border);
 	border-radius: 10px;
-	background: rgba(255, 255, 255, 0.06);
-	color: inherit;
-}
-
-form.dashboard-widget-matrix_view .matrix-view__section-title {
-	font-weight: 700;
+	background: var(--matrix-surface-soft);
+	color: var(--matrix-text);
 }
 
 div.dashboard-widget-matrix_view .matrix-view__legend {
@@ -60,9 +49,9 @@ div.dashboard-widget-matrix_view .matrix-view__legend-item {
 	display: inline-flex;
 	align-items: center;
 	gap: 8px;
-	padding: 4px 8px;
+	padding: 4px 10px;
 	border-radius: 999px;
-	background: rgba(246, 248, 251, 0.9);
+	background: var(--matrix-surface-soft);
 	border: 1px solid var(--matrix-border);
 }
 
@@ -77,8 +66,7 @@ div.dashboard-widget-matrix_view .matrix-view__table-wrap {
 	flex: 1 1 auto;
 	overflow: auto;
 	border: 1px solid var(--matrix-border);
-	border-radius: 14px;
-	box-shadow: var(--matrix-shadow);
+	border-radius: 12px;
 	background: var(--matrix-surface);
 }
 
@@ -97,8 +85,9 @@ div.dashboard-widget-matrix_view .matrix-view__table td {
 }
 
 div.dashboard-widget-matrix_view .matrix-view__table th {
+	background: #1b1f26;
+	color: var(--matrix-text);
 	font-weight: 600;
-	background: rgba(248, 250, 252, 0.98);
 }
 
 div.dashboard-widget-matrix_view .matrix-view__table th:last-child,
@@ -116,10 +105,11 @@ div.dashboard-widget-matrix_view .matrix-view__sticky-col {
 	position: sticky;
 	left: 0;
 	z-index: 2;
-	min-width: 180px;
-	max-width: 280px;
+	min-width: 220px;
+	max-width: 320px;
 	padding: 10px 12px;
 	text-align: left;
+	background: #1b1f26;
 }
 
 div.dashboard-widget-matrix_view .matrix-view__sticky-head.matrix-view__sticky-col {
@@ -127,7 +117,7 @@ div.dashboard-widget-matrix_view .matrix-view__sticky-head.matrix-view__sticky-c
 }
 
 div.dashboard-widget-matrix_view .matrix-view__cell {
-	min-width: 118px;
+	min-width: 140px;
 	text-align: center;
 }
 
@@ -135,31 +125,14 @@ div.dashboard-widget-matrix_view .matrix-view__cell-action {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	width: 100%;
-	min-height: 48px;
+	min-height: 52px;
 	padding: 10px;
-	color: inherit;
-	background: transparent;
-	border: 0;
-	text-decoration: none;
-	cursor: pointer;
-	transition: transform 120ms ease, filter 120ms ease;
-}
-
-div.dashboard-widget-matrix_view .matrix-view__cell-action:hover,
-div.dashboard-widget-matrix_view .matrix-view__cell-action:focus-visible {
-	filter: brightness(0.98);
-	transform: scale(0.985);
-	outline: 0;
-}
-
-div.dashboard-widget-matrix_view .matrix-view__cell-label {
 	font-weight: 600;
-	letter-spacing: 0.01em;
+	color: inherit;
 }
 
 div.dashboard-widget-matrix_view .matrix-view--comfortable .matrix-view__cell-action {
-	min-height: 62px;
+	min-height: 64px;
 	padding: 14px 12px;
 }
 
@@ -179,12 +152,6 @@ div.dashboard-widget-matrix_view .matrix-view__cell--warning,
 div.dashboard-widget-matrix_view .matrix-view__legend-swatch.matrix-view__cell--warning {
 	background: var(--matrix-warning-bg);
 	color: var(--matrix-warning-fg);
-}
-
-div.dashboard-widget-matrix_view .matrix-view__cell--average,
-div.dashboard-widget-matrix_view .matrix-view__legend-swatch.matrix-view__cell--average {
-	background: var(--matrix-average-bg);
-	color: var(--matrix-average-fg);
 }
 
 div.dashboard-widget-matrix_view .matrix-view__cell--high,
@@ -207,11 +174,11 @@ div.dashboard-widget-matrix_view .matrix-view__legend-swatch.matrix-view__cell--
 
 @media (max-width: 900px) {
 	div.dashboard-widget-matrix_view .matrix-view__sticky-col {
-		min-width: 140px;
-		max-width: 180px;
+		min-width: 180px;
+		max-width: 220px;
 	}
 
 	div.dashboard-widget-matrix_view .matrix-view__cell {
-		min-width: 96px;
+		min-width: 120px;
 	}
 }
