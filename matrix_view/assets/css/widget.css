@@ -81,10 +81,11 @@ div.dashboard-widget-matrix_view .matrix-view__table-wrap {
 }
 
 div.dashboard-widget-matrix_view .matrix-view__table {
-	width: 100%;
+	width: max-content;
+	min-width: 100%;
 	border-collapse: separate;
 	border-spacing: 4px;
-	min-width: 680px;
+	max-width: 100%;
 }
 
 div.dashboard-widget-matrix_view .matrix-view__table th,
@@ -122,19 +123,21 @@ div.dashboard-widget-matrix_view .matrix-view__column-label {
 
 div.dashboard-widget-matrix_view .matrix-view--headers-horizontal .matrix-view__column-head {
 	height: auto;
-	min-width: 120px;
-	max-width: 120px;
+	width: 1%;
+	min-width: 68px;
+	max-width: 84px;
 	vertical-align: middle;
 }
 
 div.dashboard-widget-matrix_view .matrix-view--headers-horizontal .matrix-view__column-label {
 	width: auto;
-	max-width: 120px;
+	max-width: 84px;
 	transform: none;
 	transform-origin: center;
-	padding: 10px 6px 8px;
-	line-height: 1.15;
+	padding: 8px 2px 6px;
+	line-height: 1.08;
 	white-space: normal;
+	text-align: center;
 }
 
 div.dashboard-widget-matrix_view .matrix-view--headers-vertical .matrix-view__column-head {
@@ -204,7 +207,7 @@ div.dashboard-widget-matrix_view .matrix-view__cell-action {
 	justify-content: flex-start;
 	gap: 3px;
 	min-height: 34px;
-	padding: 5px 4px 4px;
+	padding: 5px 3px 4px;
 	border-radius: 8px;
 	background: rgba(255, 255, 255, 0.02);
 	box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03);
@@ -248,7 +251,7 @@ div.dashboard-widget-matrix_view .matrix-view__legend-symbol::after {
 div.dashboard-widget-matrix_view .matrix-view__value {
 	font-size: 8px;
 	color: var(--matrix-muted);
-	max-width: 42px;
+	max-width: 36px;
 	min-height: 8px;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -449,6 +452,7 @@ div.dashboard-widget-matrix_view .matrix-view__cell--missing .matrix-view__value
 
 @media (max-width: 900px) {
 	div.dashboard-widget-matrix_view .matrix-view__table {
+		width: max-content;
 		min-width: 100%;
 	}
 
@@ -470,13 +474,14 @@ div.dashboard-widget-matrix_view .matrix-view__cell--missing .matrix-view__value
 	}
 
 	div.dashboard-widget-matrix_view .matrix-view--headers-horizontal .matrix-view__column-head {
-		min-width: 100px;
-		max-width: 100px;
+		min-width: 58px;
+		max-width: 72px;
 	}
 
 	div.dashboard-widget-matrix_view .matrix-view--headers-horizontal .matrix-view__column-label {
-		max-width: 100px;
+		max-width: 72px;
 		transform: none;
+		padding: 7px 2px 5px;
 	}
 
 	div.dashboard-widget-matrix_view .matrix-view--headers-vertical .matrix-view__column-head {
