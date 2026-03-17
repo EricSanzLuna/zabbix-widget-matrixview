@@ -24,6 +24,7 @@ $color_high = new CWidgetFieldTextBoxView($data['fields']['color_high']);
 $color_critical = new CWidgetFieldTextBoxView($data['fields']['color_critical']);
 $color_missing = new CWidgetFieldTextBoxView($data['fields']['color_missing']);
 $column_aliases = new CWidgetFieldTextAreaView($data['fields']['column_aliases']);
+$column_order = new CWidgetFieldTextAreaView($data['fields']['column_order']);
 $item_thresholds = new CWidgetFieldTextAreaView($data['fields']['item_thresholds']);
 $ok_text = new CWidgetFieldTextBoxView($data['fields']['ok_text']);
 $warning_text = new CWidgetFieldTextBoxView($data['fields']['warning_text']);
@@ -61,6 +62,14 @@ $missing_label = new CWidgetFieldTextBoxView($data['fields']['missing_label']);
 		)
 	])
 	->addField($column_aliases)
+	->addItem([
+		new CLabel(_('Column order')),
+		new CFormField(
+			(new CDiv(_('Optional manual order. Use one line per item key or alias. Listed columns are rendered first in this order; the rest stay after them.')))
+				->addClass('matrix-view__help')
+		)
+	])
+	->addField($column_order)
 	->addItem([
 		new CLabel(_('State evaluation')),
 		new CFormField(

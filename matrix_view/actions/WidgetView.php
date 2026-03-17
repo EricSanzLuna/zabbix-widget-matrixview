@@ -38,6 +38,7 @@ class WidgetView extends CControllerDashboardWidgetView {
 			'show_legend' => 1,
 			'itemids' => [],
 			'column_aliases' => '',
+			'column_order' => '',
 			'state_source' => Widget::STATE_SOURCE_TRIGGER_FIRST,
 			'item_thresholds' => '',
 			'threshold_direction' => Widget::THRESHOLD_ASCENDING,
@@ -135,6 +136,8 @@ class WidgetView extends CControllerDashboardWidgetView {
 				'thresholds' => null
 			];
 		}
+
+		$this->sortColumns($columns, $fields['column_order']);
 
 		return $columns;
 	}
@@ -517,6 +520,53 @@ class WidgetView extends CControllerDashboardWidgetView {
 		}
 
 		return $result;
+	}
+
+	private function sortColumns(array &$columns, string $raw_order): void {
+		$order_map = [];
+		$lines = preg_split('/\r\n|\r|\n/', trim($raw_order));
+
+		if (!$lines) {
+			return;
+		}
+
+		$position = 0;
+
+		foreach ($lines as $line) {
+			$line = trim($line);
+
+			if ($line === '') {
+				continue;
+			}
+
+			$order_map[$this->normalizeItemKey($line)] = $position++;
+		}
+
+		if (!$order_map) {
+			return;
+		}
+
+		foreach ($columns as $index => &$column) {
+			$key_match = $this->normalizeItemKey($column['key_']);
+			$alias_match = $this->normalizeItemKey($column['label']);
+
+			$column['_sort_index'] = $index;
+			$column['_sort_priority'] = $order_map[$alias_match] ?? $order_map[$key_match] ?? (100000 + $index);
+		}
+		unset($column);
+
+		usort($columns, static function(array $left, array $right): int {
+			if ($left['_sort_priority'] === $right['_sort_priority']) {
+				return $left['_sort_index'] <=> $right['_sort_index'];
+			}
+
+			return $left['_sort_priority'] <=> $right['_sort_priority'];
+		});
+
+		foreach ($columns as &$column) {
+			unset($column['_sort_index'], $column['_sort_priority']);
+		}
+		unset($column);
 	}
 
 	private function findConfigByItemKey(array $config, string $item_key): ?array {

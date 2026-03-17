@@ -98,6 +98,9 @@ class WidgetForm extends CWidgetForm {
 				new CWidgetFieldTextArea('column_aliases', _('Column aliases'))
 			)
 			->addField(
+				new CWidgetFieldTextArea('column_order', _('Column order'))
+			)
+			->addField(
 				(new CWidgetFieldTextBox('ok_text', _('OK text patterns')))
 					->setDefault('running,up,ok,healthy,1')
 			)
