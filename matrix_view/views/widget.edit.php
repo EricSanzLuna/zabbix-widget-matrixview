@@ -168,7 +168,6 @@ $style = <<<'CSS'
 .matrix-view-editor__label{color:#cbd3dc;font-size:12px}
 .matrix-view-editor__subhint{color:#8e98a4;font-size:11px}
 .matrix-view-editor__input{width:100%}
-.matrix-view-editor__colors{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
 .matrix-view-editor__modal-actions{display:flex;justify-content:flex-end;gap:10px}
 .matrix-view-editor__storage{display:none}
 </style>
@@ -220,16 +219,12 @@ $form = (new CWidgetFormView($data))
 				->addClass('matrix-view__help')
 		)
 	])
-	->addItem(
-		(new CDiv([
-			(new CFormField($color_ok))->addClass('matrix-view-editor__field'),
-			(new CFormField($color_info))->addClass('matrix-view-editor__field'),
-			(new CFormField($color_warning))->addClass('matrix-view-editor__field'),
-			(new CFormField($color_high))->addClass('matrix-view-editor__field'),
-			(new CFormField($color_critical))->addClass('matrix-view-editor__field'),
-			(new CFormField($color_missing))->addClass('matrix-view-editor__field')
-		]))->addClass('matrix-view-editor__colors')
-	)
+	->addField($color_ok)
+	->addField($color_info)
+	->addField($color_warning)
+	->addField($color_high)
+	->addField($color_critical)
+	->addField($color_missing)
 	->addField($ok_text)
 	->addField($warning_text)
 	->addField($critical_text)
