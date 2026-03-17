@@ -216,15 +216,10 @@ else {
 
 		foreach ($matrix['columns'] as $column) {
 			$cell = $row['cells'][$column['id']];
-			$show_value = !in_array($cell['state'], ['ok', 'missing'], true);
-			$cell_body = [
-				(new CSpan())
-					->addClass('matrix-view__icon matrix-view__cell--'.$cell['state'].' '.$cell['icon_class'])
-					->setAttribute('aria-label', ucfirst($cell['state']))
-					->setAttribute('role', 'img'),
-				(new CSpan($show_value ? $cell['label'] : ''))
-					->addClass('matrix-view__value')
-			];
+			$cell_body = (new CSpan())
+				->addClass('matrix-view__icon matrix-view__cell--'.$cell['state'].' '.$cell['icon_class'])
+				->setAttribute('aria-label', ucfirst($cell['state']))
+				->setAttribute('role', 'img');
 
 			$table_row->addItem(
 				(new CTag('td', true,
