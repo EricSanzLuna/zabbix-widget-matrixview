@@ -169,6 +169,13 @@ div.dashboard-widget-matrix_view .matrix-view__sticky-col {
 div.dashboard-widget-matrix_view .matrix-view__host-head {
 	color: rgba(255, 255, 255, 0.72);
 	vertical-align: middle;
+	min-height: 82px;
+	padding-top: 0;
+	padding-bottom: 0;
+}
+
+div.dashboard-widget-matrix_view .matrix-view--headers-horizontal .matrix-view__host-head {
+	min-height: 54px;
 }
 
 div.dashboard-widget-matrix_view .matrix-view__host-link {
