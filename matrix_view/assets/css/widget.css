@@ -1,21 +1,21 @@
 div.dashboard-widget-matrix_view .matrix-view,
 form.dashboard-widget-matrix_view {
-	--matrix-bg: #14161b;
-	--matrix-panel: #1d2027;
-	--matrix-border: rgba(255, 255, 255, 0.07);
+	--matrix-bg: #14181e;
+	--matrix-panel: #1a1f27;
+	--matrix-border: rgba(255, 255, 255, 0.045);
 	--matrix-text: rgba(255, 255, 255, 0.9);
-	--matrix-muted: rgba(200, 205, 218, 0.65);
-	--matrix-ok: rgba(75, 180, 118, 0.8);
-	--matrix-warning: rgba(222, 166, 72, 0.85);
-	--matrix-high: rgba(242, 130, 46, 0.9);
-	--matrix-disaster: rgba(210, 69, 69, 0.92);
-	--matrix-info: rgba(76, 118, 181, 0.85);
+	--matrix-muted: rgba(200, 205, 218, 0.56);
+	--matrix-ok: #4bb476;
+	--matrix-warning: #d9a24a;
+	--matrix-high: #ea8d3a;
+	--matrix-disaster: #d35353;
+	--matrix-info: #5d86bb;
 }
 
 div.dashboard-widget-matrix_view .matrix-view {
 	display: flex;
 	flex-direction: column;
-	gap: 10px;
+	gap: 8px;
 	height: 100%;
 	background: var(--matrix-bg);
 	color: var(--matrix-text);
@@ -27,9 +27,17 @@ div.dashboard-widget-matrix_view .matrix-view__empty {
 	box-shadow: inset 0 0 0 1px var(--matrix-border);
 }
 
+div.dashboard-widget-matrix_view .matrix-view__warning,
+div.dashboard-widget-matrix_view .matrix-view__empty {
+	padding: 9px 12px;
+	border-radius: 10px;
+	background: rgba(255, 255, 255, 0.02);
+}
+
 div.dashboard-widget-matrix_view .matrix-view__legend {
 	display: flex;
-	gap: 10px;
+	flex-wrap: wrap;
+	gap: 8px;
 	margin: 0;
 	padding: 0;
 	list-style: none;
@@ -39,63 +47,76 @@ div.dashboard-widget-matrix_view .matrix-view__legend-item {
 	display: inline-flex;
 	align-items: center;
 	gap: 6px;
-	padding: 6px 12px;
-	border-radius: 30px;
-	background: var(--matrix-panel);
+	padding: 4px 10px 4px 6px;
+	border-radius: 999px;
+	background: rgba(255, 255, 255, 0.025);
 	color: var(--matrix-text);
-	font-size: 12px;
-	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+	font-size: 11px;
+}
+
+div.dashboard-widget-matrix_view .matrix-view__legend-label {
+	color: rgba(255, 255, 255, 0.82);
 }
 
 div.dashboard-widget-matrix_view .matrix-view__legend-swatch {
-	width: 20px;
-	height: 20px;
-	border-radius: 6px;
-	font-size: 11px;
+	width: 18px;
+	height: 18px;
+	border-radius: 5px;
+	font-size: 10px;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
 	font-weight: 700;
+	box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.18);
 }
 
 div.dashboard-widget-matrix_view .matrix-view__table-wrap {
 	flex: 1 1 auto;
-	overflow-x: auto;
-	padding: 6px;
-	border-radius: 14px;
-	background: linear-gradient(145deg, rgba(17, 18, 23, 0.85), rgba(36, 40, 50, 0.95));
-	box-shadow: 0 15px 30px rgba(0, 0, 0, 0.65);
+	overflow: auto;
+	padding: 4px;
+	border-radius: 12px;
+	background: linear-gradient(180deg, rgba(21, 24, 30, 0.98), rgba(25, 29, 36, 0.98));
+	box-shadow: inset 0 0 0 1px var(--matrix-border);
 }
 
 div.dashboard-widget-matrix_view .matrix-view__table {
 	width: 100%;
 	border-collapse: separate;
-	border-spacing: 6px 6px;
+	border-spacing: 4px;
 	min-width: 680px;
+}
+
+div.dashboard-widget-matrix_view .matrix-view__table th,
+div.dashboard-widget-matrix_view .matrix-view__table td {
+	padding: 0;
+	border: 0;
 }
 
 div.dashboard-widget-matrix_view .matrix-view__table th {
 	background: transparent;
 	color: var(--matrix-muted);
-	font-size: 11px;
+	font-size: 10px;
 	line-height: 1.2;
 	text-transform: uppercase;
-	padding: 6px 0 0;
+	padding: 2px 0 0;
 }
 
 div.dashboard-widget-matrix_view .matrix-view__column-head {
-	height: 110px;
-	min-width: 60px;
+	height: 82px;
+	min-width: 58px;
+	max-width: 58px;
 	text-align: center;
 	vertical-align: bottom;
 }
 
 div.dashboard-widget-matrix_view .matrix-view__column-label {
 	display: block;
-	transform: translateY(30px) rotate(-45deg);
+	width: 94px;
+	max-width: 94px;
+	transform: translate(10px, 13px) rotate(-43deg);
 	transform-origin: left bottom;
-	max-width: 120px;
-	font-size: 10px;
+	font-size: 9px;
+	line-height: 1.02;
 	white-space: normal;
 }
 
@@ -103,12 +124,16 @@ div.dashboard-widget-matrix_view .matrix-view__sticky-col {
 	position: sticky;
 	left: 0;
 	z-index: 3;
-	background: rgba(10, 12, 15, 0.9);
+	background: rgba(16, 19, 24, 0.96);
 	padding: 8px 10px;
-	font-size: 13px;
+	font-size: 12px;
 	font-weight: 600;
-	box-shadow: inset 6px 0 0 rgba(255, 255, 255, 0.03);
-	border-radius: 6px;
+	box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.035);
+	border-radius: 8px;
+}
+
+div.dashboard-widget-matrix_view .matrix-view__host-head {
+	color: rgba(255, 255, 255, 0.72);
 }
 
 div.dashboard-widget-matrix_view .matrix-view__cell {
@@ -121,58 +146,112 @@ div.dashboard-widget-matrix_view .matrix-view__cell-action {
 	align-items: center;
 	justify-content: center;
 	gap: 2px;
-	min-height: 46px;
-	padding: 6px;
-	border-radius: 10px;
+	min-height: 34px;
+	padding: 4px;
+	border-radius: 8px;
 	background: rgba(255, 255, 255, 0.02);
-	box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
-	font-size: 11px;
+	box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+	font-size: 10px;
+}
+
+div.dashboard-widget-matrix_view .matrix-view--comfortable .matrix-view__cell-action {
+	min-height: 42px;
+	padding: 6px 5px;
 }
 
 div.dashboard-widget-matrix_view .matrix-view__icon {
-	width: 24px;
-	height: 24px;
-	border-radius: 7px;
+	width: 16px;
+	height: 16px;
+	border-radius: 5px;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	font-size: 12px;
+	font-size: 9px;
+	font-weight: 800;
+	box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.16);
 }
 
 div.dashboard-widget-matrix_view .matrix-view__value {
 	font-size: 9px;
 	color: var(--matrix-muted);
+	max-width: 42px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
-div.dashboard-widget-matrix_view .matrix-view__cell--ok {
-	background: var(--matrix-ok);
-}
-
-div.dashboard-widget-matrix_view .matrix-view__cell--info {
-	background: var(--matrix-info);
-}
-
-div.dashboard-widget-matrix_view .matrix-view__cell--warning {
-	background: var(--matrix-warning);
-}
-
-div.dashboard-widget-matrix_view .matrix-view__cell--high {
-	background: var(--matrix-high);
-}
-
-div.dashboard-widget-matrix_view .matrix-view__cell--disaster {
-	background: var(--matrix-disaster);
-}
-
+div.dashboard-widget-matrix_view .matrix-view__cell--ok,
+div.dashboard-widget-matrix_view .matrix-view__cell--info,
+div.dashboard-widget-matrix_view .matrix-view__cell--warning,
+div.dashboard-widget-matrix_view .matrix-view__cell--high,
+div.dashboard-widget-matrix_view .matrix-view__cell--disaster,
 div.dashboard-widget-matrix_view .matrix-view__cell--missing {
-	background: rgba(0, 0, 0, 0.2);
-	box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03);
-	color: rgba(255, 255, 255, 0.55);
+	background: transparent;
 }
 
-div.dashboard-widget-matrix_view .matrix-view__cell-action:hover {
-	transform: translateY(-1px);
-	box-shadow: 0 10px 16px rgba(0, 0, 0, 0.55);
+div.dashboard-widget-matrix_view .matrix-view__cell--ok .matrix-view__cell-action {
+	background: rgba(75, 180, 118, 0.08);
+}
+
+div.dashboard-widget-matrix_view .matrix-view__cell--info .matrix-view__cell-action {
+	background: rgba(93, 134, 187, 0.08);
+}
+
+div.dashboard-widget-matrix_view .matrix-view__cell--warning .matrix-view__cell-action {
+	background: rgba(217, 162, 74, 0.09);
+}
+
+div.dashboard-widget-matrix_view .matrix-view__cell--high .matrix-view__cell-action {
+	background: rgba(234, 141, 58, 0.1);
+}
+
+div.dashboard-widget-matrix_view .matrix-view__cell--disaster .matrix-view__cell-action {
+	background: rgba(211, 83, 83, 0.15);
+}
+
+div.dashboard-widget-matrix_view .matrix-view__cell--missing .matrix-view__cell-action {
+	background: rgba(255, 255, 255, 0.012);
+}
+
+div.dashboard-widget-matrix_view .matrix-view__icon--ok,
+div.dashboard-widget-matrix_view .matrix-view__legend-swatch.matrix-view__cell--ok {
+	background: var(--matrix-ok);
+	color: #173a24;
+}
+
+div.dashboard-widget-matrix_view .matrix-view__icon--info,
+div.dashboard-widget-matrix_view .matrix-view__legend-swatch.matrix-view__cell--info {
+	background: var(--matrix-info);
+	color: #172b43;
+}
+
+div.dashboard-widget-matrix_view .matrix-view__icon--warning,
+div.dashboard-widget-matrix_view .matrix-view__legend-swatch.matrix-view__cell--warning {
+	background: var(--matrix-warning);
+	color: #523600;
+}
+
+div.dashboard-widget-matrix_view .matrix-view__icon--high,
+div.dashboard-widget-matrix_view .matrix-view__legend-swatch.matrix-view__cell--high {
+	background: var(--matrix-high);
+	color: #552800;
+}
+
+div.dashboard-widget-matrix_view .matrix-view__icon--disaster,
+div.dashboard-widget-matrix_view .matrix-view__legend-swatch.matrix-view__cell--disaster {
+	background: var(--matrix-disaster);
+	color: #4d1515;
+}
+
+div.dashboard-widget-matrix_view .matrix-view__icon--missing,
+div.dashboard-widget-matrix_view .matrix-view__legend-swatch.matrix-view__cell--missing {
+	background: rgba(255, 255, 255, 0.08);
+	color: rgba(255, 255, 255, 0.78);
+}
+
+div.dashboard-widget-matrix_view .matrix-view__cell--ok .matrix-view__value,
+div.dashboard-widget-matrix_view .matrix-view__cell--missing .matrix-view__value {
+	display: none;
 }
 
 @media (max-width: 900px) {
@@ -181,10 +260,19 @@ div.dashboard-widget-matrix_view .matrix-view__cell-action:hover {
 	}
 
 	div.dashboard-widget-matrix_view .matrix-view__cell-action {
-		min-height: 42px;
+		min-height: 30px;
 	}
 
 	div.dashboard-widget-matrix_view .matrix-view__column-head {
-		height: 90px;
+		height: 72px;
+		min-width: 52px;
+		max-width: 52px;
+	}
+
+	div.dashboard-widget-matrix_view .matrix-view__column-label {
+		width: 82px;
+		max-width: 82px;
+		transform: translate(9px, 11px) rotate(-43deg);
+		font-size: 8px;
 	}
 }
