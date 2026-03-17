@@ -222,35 +222,38 @@ div.dashboard-widget-matrix_view .matrix-view__maintenance-indicator {
 	flex: 0 0 auto;
 	width: 14px;
 	height: 14px;
-	border-radius: 50%;
+	border-radius: 3px;
 	position: relative;
 	display: inline-block;
-	background: rgba(240, 169, 59, 0.18);
-	box-shadow: inset 0 0 0 1px rgba(240, 169, 59, 0.3);
+	background: rgba(240, 169, 59, 0.08);
+	box-shadow: inset 0 0 0 1px rgba(240, 169, 59, 0.12);
 	cursor: help;
 }
 
 div.dashboard-widget-matrix_view .matrix-view__maintenance-indicator::before {
 	content: '';
 	position: absolute;
-	left: 5px;
-	top: 2px;
-	width: 4px;
-	height: 8px;
+	left: 1px;
+	top: 3px;
+	width: 5px;
+	height: 5px;
 	border: 2px solid #f0a93b;
-	border-bottom: 0;
-	border-radius: 4px 4px 0 0;
+	border-radius: 50%;
 }
 
 div.dashboard-widget-matrix_view .matrix-view__maintenance-indicator::after {
 	content: '';
 	position: absolute;
-	left: 3px;
+	left: 6px;
 	top: 6px;
-	width: 8px;
-	height: 6px;
-	border-radius: 2px;
+	width: 6px;
+	height: 2px;
 	background: #f0a93b;
+	border-radius: 2px;
+	box-shadow:
+		3px 0 0 #f0a93b,
+		3px 2px 0 #f0a93b,
+		5px 2px 0 #f0a93b;
 }
 
 div.dashboard-widget-matrix_view .matrix-view__maintenance-indicator--nodata {
@@ -307,7 +310,7 @@ div.dashboard-widget-matrix_view .matrix-view__legend-symbol {
 	align-self: center;
 	position: relative;
 	background: rgba(255, 255, 255, 0.04);
-	box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.16);
+	box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.16), inset 0 0 0 1px rgba(255, 255, 255, 0.06);
 	transform: translateZ(0);
 	transition: background 0.2s ease, transform 0.2s ease;
 }
@@ -407,19 +410,22 @@ div.dashboard-widget-matrix_view .matrix-view__legend-symbol.matrix-view__cell--
 div.dashboard-widget-matrix_view .matrix-view__cell--info .matrix-view__icon::after,
 div.dashboard-widget-matrix_view .matrix-view__legend-symbol.matrix-view__cell--info::after {
 	display: block;
-	width: 8px;
-	height: 8px;
-	border: 2px solid currentColor;
-	border-radius: 50%;
+	content: 'i';
+	width: auto;
+	height: auto;
+	border: 0;
 	left: 50%;
-	top: 5px;
+	top: 3px;
 	transform: translateX(-50%);
+	font-size: 12px;
+	font-weight: 700;
+	line-height: 1;
+	color: currentColor;
 }
 
 div.dashboard-widget-matrix_view .matrix-view__legend-symbol.matrix-view__cell--info::after {
-	width: 6px;
-	height: 6px;
-	top: 6px;
+	font-size: 10px;
+	top: 3px;
 }
 
 div.dashboard-widget-matrix_view .matrix-view__cell--warning .matrix-view__icon,
@@ -437,7 +443,7 @@ div.dashboard-widget-matrix_view .matrix-view__legend-symbol.matrix-view__cell--
 	border-right: 6px solid transparent;
 	border-bottom: 10px solid currentColor;
 	left: 50%;
-	top: 5px;
+	top: 4px;
 	transform: translateX(-50%);
 }
 
@@ -445,6 +451,19 @@ div.dashboard-widget-matrix_view .matrix-view__legend-symbol.matrix-view__cell--
 	border-left-width: 5px;
 	border-right-width: 5px;
 	border-bottom-width: 8px;
+}
+
+div.dashboard-widget-matrix_view .matrix-view__cell--warning .matrix-view__icon::before,
+div.dashboard-widget-matrix_view .matrix-view__legend-symbol.matrix-view__cell--warning::before {
+	display: block;
+	width: 2px;
+	height: 5px;
+	background: rgba(20, 24, 30, 0.9);
+	left: 50%;
+	top: 8px;
+	transform: translateX(-50%);
+	border-radius: 1px;
+	z-index: 1;
 }
 
 div.dashboard-widget-matrix_view .matrix-view__cell--high .matrix-view__icon,
@@ -456,25 +475,21 @@ div.dashboard-widget-matrix_view .matrix-view__legend-symbol.matrix-view__cell--
 div.dashboard-widget-matrix_view .matrix-view__cell--high .matrix-view__icon::after,
 div.dashboard-widget-matrix_view .matrix-view__legend-symbol.matrix-view__cell--high::after {
 	display: block;
-	width: 2px;
-	height: 10px;
-	background: currentColor;
+	content: '!';
+	width: auto;
+	height: auto;
 	left: 50%;
-	top: 5px;
+	top: 2px;
 	transform: translateX(-50%);
-	border-radius: 1px;
+	font-size: 14px;
+	font-weight: 700;
+	line-height: 1;
+	color: currentColor;
 }
 
 div.dashboard-widget-matrix_view .matrix-view__cell--high .matrix-view__icon::before,
 div.dashboard-widget-matrix_view .matrix-view__legend-symbol.matrix-view__cell--high::before {
-	display: block;
-	width: 4px;
-	height: 4px;
-	background: currentColor;
-	border-radius: 50%;
-	left: 50%;
-	bottom: 5px;
-	transform: translateX(-50%);
+	display: none;
 }
 
 div.dashboard-widget-matrix_view .matrix-view__cell--disaster .matrix-view__icon,
@@ -486,23 +501,21 @@ div.dashboard-widget-matrix_view .matrix-view__legend-symbol.matrix-view__cell--
 div.dashboard-widget-matrix_view .matrix-view__cell--disaster .matrix-view__icon::after,
 div.dashboard-widget-matrix_view .matrix-view__legend-symbol.matrix-view__cell--disaster::after {
 	display: block;
-	width: 10px;
-	height: 2px;
-	background: currentColor;
+	content: '×';
+	width: auto;
+	height: auto;
 	left: 50%;
-	top: 11px;
+	top: 1px;
 	transform: translateX(-50%);
+	font-size: 15px;
+	font-weight: 700;
+	line-height: 1;
+	color: currentColor;
 }
 
 div.dashboard-widget-matrix_view .matrix-view__cell--disaster .matrix-view__icon::before,
 div.dashboard-widget-matrix_view .matrix-view__legend-symbol.matrix-view__cell--disaster::before {
-	display: block;
-	width: 2px;
-	height: 10px;
-	background: currentColor;
-	left: 50%;
-	top: 6px;
-	transform: translate(-50%, 0);
+	display: none;
 }
 
 div.dashboard-widget-matrix_view .matrix-view__cell--missing .matrix-view__icon,
