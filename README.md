@@ -38,6 +38,16 @@ Then:
 - `Host order`: ascending or descending by name
 - `Host limit`: maximum number of rows rendered
 - `Density`: compact or comfortable cell spacing
+- `Header orientation`: diagonal, horizontal or vertical column headers
+- `Show indicator legend`: shows or hides the state legend above the matrix
+
+Hosts that do not have any of the selected item keys are automatically excluded from the matrix.
+
+When a visible host is in maintenance, the host name shows a maintenance indicator with a tooltip that includes:
+
+- maintenance name
+- whether the maintenance keeps data collection enabled or disabled
+- maintenance end time when available
 
 ### Columns
 
@@ -71,15 +81,40 @@ Examples:
 
 ```text
 service.info[W3SVC,state]|IIS
+service.info["W3SVC",state]|IIS
 service.info[HEATEmailService,state]|HEAT Email
 icmpping|Ping
 ```
 
 Notes:
 
-- `key` must match the selected reference item's exact `key_`
+- `key` should match the selected reference item's `key_`
+- quoted and unquoted variants are normalized internally, so both `service.info[W3SVC,state]` and `service.info["W3SVC",state]` are accepted
 - the alias is only visual; item lookup still uses the original key
 - tooltips keep the full original item name for extra context
+
+### Column order
+
+You can manually reorder visible columns in `Column order`.
+
+Format:
+
+- one line per item key or alias
+
+Examples:
+
+```text
+IIS
+HEAT Email
+service.info["SQLSERVER",state]
+service.info["SQLSERVERAGENT",state]
+```
+
+Notes:
+
+- listed columns are rendered first, in the order you provide
+- columns not listed are rendered afterwards in their original selection order
+- you can mix aliases and item keys
 
 ### Per-item thresholds
 
@@ -118,6 +153,26 @@ When `State source` is set to `Triggers first, thresholds fallback`:
 3. if no active trigger exists, the widget falls back to numeric thresholds or text patterns
 
 This is the recommended mode when your trigger severities already represent the operational importance of each item.
+
+### Indicator colors
+
+Each visual state can be customized with a HEX color value:
+
+- `OK color`
+- `Info color`
+- `Warning color`
+- `High color`
+- `Critical color`
+- `Missing item color`
+
+Accepted formats:
+
+```text
+4bb476
+#4bb476
+```
+
+These values control both the icon color and the soft background tint used by the cell.
 
 ### Numeric values
 
@@ -218,6 +273,22 @@ Check:
 
 That host does not have an item with the same `key_` as the selected reference column.
 
+### A host shows a maintenance icon
+
+That host is currently in active maintenance. Hover the indicator next to the host name to see the maintenance name, maintenance mode and end time.
+
+### Column aliases do not seem to apply
+
+Check the exact item `Key` in Zabbix:
+
+1. Open `Data collection -> Hosts`
+2. Open the host
+3. Open `Items`
+4. Open the item
+5. Copy the `Key` field
+
+Then use that key in `Column aliases`. For service checks, both quoted and unquoted forms are accepted by the widget normalization logic.
+
 ### Colors do not match expected service states
 
 Adjust:
@@ -228,6 +299,7 @@ Adjust:
 ## Current limitations
 
 - no tag-based `Problems` mode
+- no embedded column editor like `Top hosts`; configuration uses native fields plus text areas for aliases, order and per-item thresholds
 - no detail modal yet
 
 The current version intentionally focuses on a more reliable item-based matrix with a simpler configuration model.

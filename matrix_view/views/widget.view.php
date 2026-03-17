@@ -104,6 +104,27 @@ foreach ($matrix['warnings'] as $warning) {
 	$wrapper->addItem((new CDiv($warning))->addClass('matrix-view__warning'));
 }
 
+$get_maintenance_tooltip = static function(?array $maintenance): ?string {
+	if ($maintenance === null) {
+		return null;
+	}
+
+	$type_label = ((int) ($maintenance['type'] ?? 0) === MAINTENANCE_TYPE_NORMAL)
+		? _('Maintenance with data collection')
+		: _('Maintenance without data collection');
+
+	$tooltip = ($maintenance['name'] ?? _('Maintenance')).' ['.$type_label.']';
+
+	if (!empty($maintenance['active_till'])) {
+		$tooltip .= "\n".sprintf('%s: %s',
+			_('Until'),
+			zbx_date2str(DATE_TIME_FORMAT_SECONDS, (int) $maintenance['active_till'])
+		);
+	}
+
+	return $tooltip;
+};
+
 $legend = (new CTag('ul', true))->addClass('matrix-view__legend');
 
 if ((int) ($fields['show_legend'] ?? 1) === 1) {
@@ -157,10 +178,7 @@ else {
 
 	foreach ($matrix['rows'] as $row) {
 		$table_row = new CTag('tr', true);
-		$host_label = $row['maintenance']
-			? $row['label'].' ('._('maintenance').')'
-			: $row['label'];
-		$host_link = (new CLinkAction($host_label))
+		$host_link = (new CLinkAction($row['label']))
 			->addClass('matrix-view__host-link')
 			->setAttribute('data-menu-popup', json_encode([
 				'type' => 'host',
@@ -171,7 +189,30 @@ else {
 			->setAttribute('aria-haspopup', 'true')
 			->setAttribute('aria-expanded', 'false');
 
-		$table_row->addItem((new CTag('th', true, $host_link))->addClass('matrix-view__sticky-col'));
+		$host_meta = (new CDiv())->addClass('matrix-view__host-meta')
+			->addItem($host_link);
+
+		if ($row['maintenance'] !== null) {
+			$maintenance_tooltip = $get_maintenance_tooltip($row['maintenance']);
+			$maintenance_icon = (new CSpan())
+				->addClass('matrix-view__maintenance-indicator');
+
+			if ((int) ($row['maintenance']['type'] ?? 0) !== MAINTENANCE_TYPE_NORMAL) {
+				$maintenance_icon->addClass('matrix-view__maintenance-indicator--nodata');
+			}
+
+			if ($maintenance_tooltip !== null) {
+				$maintenance_icon->setAttribute('title', $maintenance_tooltip);
+			}
+
+			$maintenance_icon
+				->setAttribute('aria-label', _('Host is in maintenance'))
+				->setAttribute('role', 'img');
+
+			$host_meta->addItem($maintenance_icon);
+		}
+
+		$table_row->addItem((new CTag('th', true, $host_meta))->addClass('matrix-view__sticky-col'));
 
 		foreach ($matrix['columns'] as $column) {
 			$cell = $row['cells'][$column['id']];

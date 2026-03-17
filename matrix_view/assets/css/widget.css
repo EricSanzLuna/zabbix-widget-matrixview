@@ -185,6 +185,14 @@ div.dashboard-widget-matrix_view .matrix-view__sticky-col {
 	justify-content: center;
 }
 
+div.dashboard-widget-matrix_view .matrix-view__host-meta {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	max-width: 100%;
+}
+
 div.dashboard-widget-matrix_view .matrix-view__host-head {
 	color: rgba(255, 255, 255, 0.72);
 	vertical-align: middle;
@@ -208,6 +216,52 @@ div.dashboard-widget-matrix_view .matrix-view__host-link {
 	white-space: normal;
 	overflow-wrap: anywhere;
 	line-height: 1.12;
+}
+
+div.dashboard-widget-matrix_view .matrix-view__maintenance-indicator {
+	flex: 0 0 auto;
+	width: 14px;
+	height: 14px;
+	border-radius: 50%;
+	position: relative;
+	display: inline-block;
+	background: rgba(240, 169, 59, 0.18);
+	box-shadow: inset 0 0 0 1px rgba(240, 169, 59, 0.3);
+	cursor: help;
+}
+
+div.dashboard-widget-matrix_view .matrix-view__maintenance-indicator::before {
+	content: '';
+	position: absolute;
+	left: 5px;
+	top: 2px;
+	width: 4px;
+	height: 8px;
+	border: 2px solid #f0a93b;
+	border-bottom: 0;
+	border-radius: 4px 4px 0 0;
+}
+
+div.dashboard-widget-matrix_view .matrix-view__maintenance-indicator::after {
+	content: '';
+	position: absolute;
+	left: 3px;
+	top: 6px;
+	width: 8px;
+	height: 6px;
+	border-radius: 2px;
+	background: #f0a93b;
+}
+
+div.dashboard-widget-matrix_view .matrix-view__maintenance-indicator--nodata {
+	background: rgba(127, 135, 146, 0.18);
+	box-shadow: inset 0 0 0 1px rgba(127, 135, 146, 0.32);
+}
+
+div.dashboard-widget-matrix_view .matrix-view__maintenance-indicator--nodata::before,
+div.dashboard-widget-matrix_view .matrix-view__maintenance-indicator--nodata::after {
+	background: #9aa3af;
+	border-color: #9aa3af;
 }
 
 div.dashboard-widget-matrix_view .matrix-view__host-link:hover,

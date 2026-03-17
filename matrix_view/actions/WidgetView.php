@@ -62,7 +62,7 @@ class WidgetView extends CControllerDashboardWidgetView {
 
 	private function getHosts(array $fields): array {
 		$options = [
-			'output' => ['hostid', 'name', 'host', 'maintenance_status'],
+			'output' => ['hostid', 'name', 'host', 'maintenance_status', 'maintenance_type', 'maintenanceid', 'maintenance_from'],
 			'monitored_hosts' => true,
 			'preservekeys' => true,
 			'sortfield' => 'name',
@@ -83,23 +83,77 @@ class WidgetView extends CControllerDashboardWidgetView {
 			return [];
 		}
 
+		$maintenance_details = $this->getMaintenanceDetails($db_hosts);
 		$hosts = [];
 
 		foreach ($db_hosts as $db_host) {
 			$maintenance = (int) $db_host['maintenance_status'] === HOST_MAINTENANCE_STATUS_ON;
+			$maintenanceid = (string) ($db_host['maintenanceid'] ?? '');
 
 			if (!$fields['show_maintenance'] && $maintenance) {
 				continue;
 			}
 
+			$maintenance_info = $maintenance && $maintenanceid !== ''
+				? ($maintenance_details[$maintenanceid] ?? null)
+				: null;
+
 			$hosts[$db_host['hostid']] = [
 				'hostid' => (string) $db_host['hostid'],
 				'label' => $db_host['name'] !== '' ? $db_host['name'] : $db_host['host'],
 				'maintenance' => $maintenance
+					? [
+						'id' => $maintenanceid,
+						'type' => (int) $db_host['maintenance_type'],
+						'from' => (int) ($db_host['maintenance_from'] ?? 0),
+						'name' => $maintenance_info['name'] ?? _('Maintenance'),
+						'active_till' => (int) ($maintenance_info['active_till'] ?? 0)
+					]
+					: null
 			];
 		}
 
 		return array_slice($hosts, 0, max(1, (int) $fields['limit_hosts']), true);
+	}
+
+	private function getMaintenanceDetails(array $db_hosts): array {
+		$maintenanceids = [];
+
+		foreach ($db_hosts as $db_host) {
+			if ((int) ($db_host['maintenance_status'] ?? HOST_MAINTENANCE_STATUS_OFF) !== HOST_MAINTENANCE_STATUS_ON) {
+				continue;
+			}
+
+			$maintenanceid = (string) ($db_host['maintenanceid'] ?? '');
+
+			if ($maintenanceid !== '') {
+				$maintenanceids[] = $maintenanceid;
+			}
+		}
+
+		$maintenanceids = array_values(array_unique($maintenanceids));
+
+		if (!$maintenanceids) {
+			return [];
+		}
+
+		$db_maintenances = API::Maintenance()->get([
+			'output' => ['maintenanceid', 'name', 'active_since', 'active_till', 'maintenance_type'],
+			'maintenanceids' => $maintenanceids,
+			'preservekeys' => false
+		]);
+
+		if (!$db_maintenances) {
+			return [];
+		}
+
+		$maintenances = [];
+
+		foreach ($db_maintenances as $db_maintenance) {
+			$maintenances[(string) $db_maintenance['maintenanceid']] = $db_maintenance;
+		}
+
+		return $maintenances;
 	}
 
 	private function getReferenceItems(array $fields): array {
