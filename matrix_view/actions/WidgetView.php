@@ -35,6 +35,7 @@ class WidgetView extends CControllerDashboardWidgetView {
 			'limit_hosts' => 25,
 			'visual_mode' => Widget::VISUAL_COMPACT,
 			'itemids' => [],
+			'column_aliases' => '',
 			'state_source' => Widget::STATE_SOURCE_TRIGGER_FIRST,
 			'item_thresholds' => '',
 			'threshold_direction' => Widget::THRESHOLD_ASCENDING,
@@ -97,6 +98,8 @@ class WidgetView extends CControllerDashboardWidgetView {
 			return [];
 		}
 
+		$column_aliases = $this->parseColumnAliases($fields['column_aliases']);
+
 		$db_items = API::Item()->get([
 			'output' => ['itemid', 'name', 'key_', 'units', 'value_type'],
 			'itemids' => $fields['itemids'],
@@ -111,10 +114,13 @@ class WidgetView extends CControllerDashboardWidgetView {
 
 		foreach ($db_items as $db_item) {
 			$column_id = (string) $db_item['itemid'];
+			$full_label = $db_item['name'];
+			$display_label = $column_aliases[$db_item['key_']] ?? $full_label;
 
 			$columns[] = [
 				'id' => $column_id,
-				'label' => $db_item['name'],
+				'label' => $display_label,
+				'full_label' => $full_label,
 				'key_' => $db_item['key_'],
 				'units' => $db_item['units'],
 				'value_type' => (int) $db_item['value_type']
@@ -293,7 +299,6 @@ class WidgetView extends CControllerDashboardWidgetView {
 				'label' => $fields['missing_label'],
 				'state' => 'missing',
 				'tooltip' => sprintf('%s: %s', $column['label'], $fields['missing_label']),
-				'icon' => '-',
 				'icon_class' => 'missing'
 			];
 		}
@@ -319,7 +324,6 @@ class WidgetView extends CControllerDashboardWidgetView {
 			'label' => $label,
 			'state' => $state,
 			'tooltip' => $tooltip,
-			'icon' => $this->getStateIcon($state),
 			'icon_class' => $this->getStateIconClass($state)
 		];
 	}
@@ -479,6 +483,33 @@ class WidgetView extends CControllerDashboardWidgetView {
 		return $result;
 	}
 
+	private function parseColumnAliases(string $raw_aliases): array {
+		$result = [];
+		$lines = preg_split('/\r\n|\r|\n/', trim($raw_aliases));
+
+		if (!$lines) {
+			return [];
+		}
+
+		foreach ($lines as $line) {
+			$line = trim($line);
+
+			if ($line === '') {
+				continue;
+			}
+
+			$parts = array_map('trim', explode('|', $line, 2));
+
+			if (count($parts) < 2 || $parts[0] === '' || $parts[1] === '') {
+				continue;
+			}
+
+			$result[$parts[0]] = $parts[1];
+		}
+
+		return $result;
+	}
+
 	private function parseDirection(string $direction): int {
 		$direction = strtolower(trim($direction));
 
@@ -498,24 +529,6 @@ class WidgetView extends CControllerDashboardWidgetView {
 			['state' => 'disaster', 'label' => _('Critical')],
 			['state' => 'missing', 'label' => _('Missing item')]
 		];
-	}
-
-	private function getStateIcon(string $state): string {
-		switch ($state) {
-			case 'ok':
-				return 'v';
-			case 'info':
-				return 'i';
-			case 'warning':
-				return '!';
-			case 'high':
-				return '!';
-			case 'disaster':
-				return 'x';
-			case 'missing':
-			default:
-				return '-';
-		}
 	}
 
 	private function getStateIconClass(string $state): string {

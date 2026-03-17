@@ -11,6 +11,7 @@ $host_order = new CWidgetFieldSelectView($data['fields']['host_order']);
 $visual_mode = new CWidgetFieldSelectView($data['fields']['visual_mode']);
 $show_maintenance = new CWidgetFieldCheckBoxView($data['fields']['show_maintenance']);
 $state_source = new CWidgetFieldSelectView($data['fields']['state_source']);
+$column_aliases = new CWidgetFieldTextAreaView($data['fields']['column_aliases']);
 $item_thresholds = new CWidgetFieldTextAreaView($data['fields']['item_thresholds']);
 $threshold_direction = new CWidgetFieldSelectView($data['fields']['threshold_direction']);
 $warning_threshold = new CWidgetFieldNumericBoxView($data['fields']['warning_threshold']);
@@ -42,6 +43,14 @@ $missing_label = new CWidgetFieldTextBoxView($data['fields']['missing_label']);
 	->addField(
 		new CWidgetFieldMultiSelectItemView($data['fields']['itemids'], $data['captions']['ms']['items']['itemids'] ?? [])
 	)
+	->addItem([
+		new CLabel(_('Column aliases')),
+		new CFormField(
+			(new CDiv(_('Optional aliases by item key. One line per selected reference item: key|alias. Example: service.info[W3SVC,state]|IIS')))
+				->addClass('matrix-view__help')
+		)
+	])
+	->addField($column_aliases)
 	->addItem([
 		new CLabel(_('Color rules')),
 		new CFormField(

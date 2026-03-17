@@ -40,10 +40,11 @@ foreach ($matrix['warnings'] as $warning) {
 $legend = (new CTag('ul', true))->addClass('matrix-view__legend');
 
 foreach ($matrix['legend'] as $legend_item) {
+	$legend_icon = (new CSpan())->addClass('matrix-view__legend-symbol matrix-view__cell--'.$legend_item['state'])
+		->setAttribute('aria-hidden', 'true');
 	$legend->addItem(
 		(new CTag('li', true, [
-			(new CSpan($legend_item['state'] === 'ok' ? 'v' : ($legend_item['state'] === 'info' ? 'i' : ($legend_item['state'] === 'missing' ? '-' : ($legend_item['state'] === 'disaster' ? 'x' : '!')))))
-				->addClass('matrix-view__legend-swatch matrix-view__cell--'.$legend_item['state']),
+			$legend_icon,
 			(new CSpan($legend_item['label']))->addClass('matrix-view__legend-label')
 		]))->addClass('matrix-view__legend-item')
 	);
@@ -64,13 +65,19 @@ else {
 	);
 
 	foreach ($matrix['columns'] as $column) {
+		$column_title = $column['label'];
+
+		if (($column['full_label'] ?? $column['label']) !== $column['label']) {
+			$column_title = $column['label']."\n".$column['full_label'];
+		}
+
 		$short_label = $shorten_label($column['label']);
 
 		$header_row->addItem(
 			(new CTag('th', true,
 				(new CSpan($short_label))
 					->addClass('matrix-view__column-label')
-					->setAttribute('title', $column['label'])
+					->setAttribute('title', $column_title)
 			))->addClass('matrix-view__sticky-head matrix-view__column-head')
 		);
 	}
@@ -84,19 +91,30 @@ else {
 		$host_label = $row['maintenance']
 			? $row['label'].' ('._('maintenance').')'
 			: $row['label'];
+		$host_link = (new CLinkAction($host_label))
+			->addClass('matrix-view__host-link')
+			->setAttribute('data-menu-popup', json_encode([
+				'type' => 'host',
+				'data' => [
+					'hostid' => $row['hostid']
+				]
+			]))
+			->setAttribute('aria-haspopup', 'true')
+			->setAttribute('aria-expanded', 'false');
 
-		$table_row->addItem((new CTag('th', true, $host_label))->addClass('matrix-view__sticky-col'));
+		$table_row->addItem((new CTag('th', true, $host_link))->addClass('matrix-view__sticky-col'));
 
 		foreach ($matrix['columns'] as $column) {
 			$cell = $row['cells'][$column['id']];
 			$show_value = !in_array($cell['state'], ['ok', 'missing'], true);
 			$cell_body = [
-				(new CSpan($cell['icon']))->addClass('matrix-view__icon '.$cell['icon_class'])
+				(new CSpan())
+					->addClass('matrix-view__icon matrix-view__cell--'.$cell['state'].' '.$cell['icon_class'])
+					->setAttribute('aria-label', ucfirst($cell['state']))
+					->setAttribute('role', 'img'),
+				(new CSpan($show_value ? $cell['label'] : ''))
+					->addClass('matrix-view__value')
 			];
-
-			if ($show_value) {
-				$cell_body[] = (new CSpan($cell['label']))->addClass('matrix-view__value');
-			}
 
 			$table_row->addItem(
 				(new CTag('td', true,

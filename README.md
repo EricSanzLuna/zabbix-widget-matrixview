@@ -57,6 +57,30 @@ Example:
 - select `CPU utilization` from one host
 - if other hosts also have the same `key_`, they will fill that column
 
+### Column aliases
+
+You can optionally rename visible column headers in `Column aliases`.
+
+Format:
+
+```text
+key|alias
+```
+
+Examples:
+
+```text
+service.info[W3SVC,state]|IIS
+service.info[HEATEmailService,state]|HEAT Email
+icmpping|Ping
+```
+
+Notes:
+
+- `key` must match the selected reference item's exact `key_`
+- the alias is only visual; item lookup still uses the original key
+- tooltips keep the full original item name for extra context
+
 ### Per-item thresholds
 
 You can override thresholds for specific selected items in `Per-item thresholds`.

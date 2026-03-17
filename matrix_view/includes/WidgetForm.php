@@ -51,6 +51,9 @@ class WidgetForm extends CWidgetForm {
 					->setFlags(CWidgetField::FLAG_NOT_EMPTY | CWidgetField::FLAG_LABEL_ASTERISK)
 			)
 			->addField(
+				new CWidgetFieldTextArea('column_aliases', _('Column aliases'))
+			)
+			->addField(
 				(new CWidgetFieldSelect('state_source', _('State source'), [
 					Widget::STATE_SOURCE_TRIGGER_FIRST => _('Triggers first, thresholds fallback'),
 					Widget::STATE_SOURCE_THRESHOLDS_ONLY => _('Thresholds and text patterns only')
